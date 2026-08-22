@@ -1,0 +1,27 @@
+<!-- @dsCard group="Components" viewport="700x300" name="My work — filters, groups, rows" subtitle="Fixed five-column grid, venture dot, lane pill, mono right-aligned date" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{background:var(--root);padding:14px}.f{border:1px solid var(--line);border-radius:3px;background:var(--bg);overflow:hidden;margin-bottom:12px}</style></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const { FilterBar, GroupHeader, TaskRow } = window.AVLHubDesignSystem_5531ba;
+ReactDOM.createRoot(document.getElementById('root')).render(
+ <div className="f">
+  <div style={{padding:22,display:'flex',alignItems:'flex-end',justifyContent:'space-between'}}>
+    <div><h3 style={{fontSize:25,fontWeight:600,letterSpacing:'-.025em',margin:0}}>Risad's work</h3>
+      <div style={{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--faint)',letterSpacing:'.08em',marginTop:6}}>7 OPEN · 2 DUE THIS WEEK · 1 BLOCKED</div></div>
+    <FilterBar filters={['All','Tech','Capital','Blocked','No date']} active="All" />
+  </div>
+  <GroupHeader label="Overdue" count={1} hot />
+  <TaskRow title="Sandbox access follow up with the agency" venture="ImmiClaw" ventureColor="var(--magenta)" lane="Tech" date="2D LATE" late />
+  <GroupHeader label="This week" count={3} />
+  <TaskRow title="Scope MVP auth and agent roles" venture="ImmiClaw" ventureColor="var(--magenta)" lane="Tech" date="24 AUG" />
+  <TaskRow title="Cut the Play Store release for 2.4" venture="Dikkha AI" ventureColor="var(--violet)" lane="Tech" date="25 AUG" />
+  <GroupHeader label="No date" count={2} />
+  <TaskRow title="Write up why we passed on the logistics one" venture="Unfiled" lane="Ops" laneColor="var(--teal)" date="—" />
+  <TaskRow title="Review Eloy Lab's regulatory timeline" venture="Eloy Lab" ventureColor="var(--amber)" lane="Thesis" laneColor="var(--amber)" date="—" />
+ </div>);
+</script></body></html>

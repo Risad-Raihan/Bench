@@ -1,0 +1,57 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Overlay — modal, command palette" subtitle="Modal with one primary action; ⌘K palette with Actions first" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{background:var(--root);padding:14px}</style></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const { Modal, CommandPalette, CommandRow, TextField, ActionButton, DropZone } = window.AVLHubDesignSystem_5531ba;
+function Demo(){
+ return (<div style={{position:'relative',height:390,background:'var(--bg)',border:'1px solid var(--line)',borderRadius:3,overflow:'hidden'}}>
+  <div style={{position:'absolute',inset:0,display:'grid',gridTemplateColumns:'1fr 1fr'}}>
+   <div style={{position:'relative'}}>
+    <div style={{position:'absolute',inset:0,transform:'scale(.82)',transformOrigin:'top left',width:'122%'}}>
+     <div style={{position:'relative',height:420}}>
+      <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,.6)'}}></div>
+      <div style={{position:'absolute',top:20,left:14,width:400,background:'var(--panel)',border:'1px solid var(--line2)',borderRadius:3,boxShadow:'var(--shadow-menu)',overflow:'hidden'}}>
+       <div style={{padding:'16px 18px 14px',borderBottom:'1px solid var(--line)'}}>
+        <div style={{fontFamily:'var(--font-mono)',fontSize:11,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--copper)'}}>New venture</div>
+        <div style={{fontSize:18,fontWeight:600,letterSpacing:'-.02em',marginTop:7}}>Add a venture to the pipeline</div>
+       </div>
+       <div style={{padding:18}}>
+        <TextField label="Name" value="ImmiClaw" />
+        <TextField label="One-liner" value="" placeholder="Study abroad automation for agents across West Africa" multiline optional />
+        <TextField label="Founder" value="" placeholder="Tunde Adeyemi" optional />
+        <DropZone label="Drop the deck" hint="PDF or PPTX · optional" />
+       </div>
+       <div style={{padding:'13px 18px',borderTop:'1px solid var(--line)',background:'var(--bg2)',display:'flex',alignItems:'center',gap:10}}>
+        <ActionButton>Create and open</ActionButton>
+        <span style={{fontSize:11.5,color:'var(--faint)'}}>Everything else is editable later.</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <div style={{borderLeft:'1px solid var(--line)',padding:14}}>
+    <div style={{background:'var(--panel)',border:'1px solid var(--line2)',borderRadius:3,boxShadow:'var(--shadow-menu)',overflow:'hidden'}}>
+     <div style={{display:'flex',alignItems:'center',gap:11,padding:'12px 14px',borderBottom:'1px solid var(--line)'}}>
+      <span style={{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--copper)'}}>⌘K</span>
+      <span style={{fontSize:13.5,color:'var(--ink-ghost3)'}}>Jump to a venture, note or action</span>
+     </div>
+     <div style={{padding:5}}>
+      <div style={{fontFamily:'var(--font-mono)',fontSize:11,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--faint)',padding:'9px 9px 5px'}}>Actions</div>
+      <CommandRow glyph="+" label="New venture" hint="⌘N" primary on />
+      <CommandRow glyph="☑" label="New task" />
+      <CommandRow glyph="⚑" label="Log a decision" />
+      <div style={{fontFamily:'var(--font-mono)',fontSize:11,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--faint)',padding:'9px 9px 5px'}}>Ventures</div>
+      <CommandRow glyph="●" label="ImmiClaw" color="var(--magenta)" hint="Validate" />
+      <CommandRow glyph="●" label="Dikkha AI" color="var(--violet)" hint="Build" />
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>);}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

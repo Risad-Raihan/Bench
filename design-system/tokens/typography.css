@@ -1,0 +1,54 @@
+:root{
+  /* size ramp — every value below is taken from the v1 reference verbatim */
+  --fs-44:44px;  /* document h1 */
+  --fs-34:34px;  /* venture stage numeral */
+  --fs-33:33px;  /* note title */
+  --fs-31:31px;  /* venture name */
+  --fs-27:27px;  /* KPI numeral */
+  --fs-25:25px;  /* page title (Pipeline, My work) */
+  --fs-18:18px;  /* note h2 block */
+  --fs-16:16px;  /* strip numeral */
+  --fs-15:15px;  /* lede */
+  --fs-14-5:14.5px; /* venture card title, note paragraph */
+  --fs-14:14px;  /* rail prose, column count */
+  --fs-13-5:13.5px; /* row title, task span, venture sub */
+  --fs-13:13px;  /* slash item, legend label */
+  --fs-12-5:12.5px; /* sidebar link, gate label, kanban title */
+  --fs-12:12px;  /* legend caption, event title, meta link */
+  --fs-11-5:11.5px; /* venture card caption */
+  /* 11px is the FLOOR for mono text — nav, eyebrow, meta line, tags, crumbs,
+     filters, micro-labels and event flags all sit here. Nothing mono goes below it.
+     The former 9 / 9.5 / 10 / 10.5 steps were retired for contrast reasons. */
+  --fs-11:11px;
+  --fs-mono-min:11px;
+
+  --fw-regular:400; /* @kind font */
+  --fw-medium:500; /* @kind font */
+  --fw-semibold:600; /* @kind font */
+  --fw-bold:700; /* @kind font */
+
+  /* tracking — negative for display sans, wide for uppercase mono */
+  --ls-display-xl:-.035em; /* @kind other */
+  --ls-display:-.03em; /* @kind other */
+  --ls-title:-.025em; /* @kind other */
+  --ls-sub:-.02em; /* @kind other */
+  --ls-card:-.015em; /* @kind other */
+  --ls-mono-tight:.06em; /* @kind other */
+  --ls-mono:.08em; /* @kind other */
+  --ls-mono-wide:.1em; /* @kind other */
+  --ls-mono-wider:.13em; /* @kind other */
+  --ls-mono-label:.14em; /* @kind other */
+  --ls-mono-caps:.16em; /* @kind other */
+  --ls-mono-caps-wide:.18em; /* @kind other */
+  --ls-mono-stage:.2em; /* @kind other */
+  --ls-mono-eyebrow:.22em; /* @kind other */
+
+  --lh-tight:1.15; /* @kind other */
+  --lh-snug:1.35; /* @kind other */
+  --lh-card:1.4; /* @kind other */
+  --lh-ui:1.45; /* @kind other */
+  --lh-label:1.5; /* @kind other */
+  --lh-prose:1.65; /* @kind other */
+  --lh-lede:1.7; /* @kind other */
+  --lh-note:1.75; /* @kind other */
+}

@@ -1,0 +1,27 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Notes — blocks, tasks, slash menu" subtitle="Hover-revealed block controls, live task rows, the one shadowed menu, sidebar links" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{background:var(--root);padding:14px}.f{border:1px solid var(--line);border-radius:3px;background:var(--bg);overflow:hidden;margin-bottom:12px}</style></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const { NoteSidebar, NoteBlock, NoteQuote, TaskBlock, SlashMenu, MetaRail } = window.AVLHubDesignSystem_5531ba;
+ReactDOM.createRoot(document.getElementById('root')).render(
+ <div className="f" style={{display:'grid',gridTemplateColumns:'216px 1fr 200px'}}>
+  <NoteSidebar active="Call with Tunde" groups={[
+    {label:'Pinned',items:[{label:'Call with Tunde',color:'var(--magenta)'},{label:'AVL thesis, 2026',color:'var(--copper)'}]},
+    {label:'By venture',items:[{label:'ImmiClaw · 6',color:'var(--magenta)'},{label:'Dikkha AI · 4',color:'var(--violet)'},{label:'Chhar · 9',color:'var(--teal)'}]},
+    {label:'Unfiled · 7',items:[{label:'Agent pricing ideas'},{label:'Who we should not back'}]}]} />
+  <div style={{padding:'20px 24px 30px'}}>
+    <NoteBlock rise={0}><p style={{fontSize:14.5,lineHeight:1.75,color:'var(--body-ink)',margin:0}}>He has three agencies ready to pilot in Lagos, all currently doing document review by hand.</p></NoteBlock>
+    <NoteBlock rise={1}><NoteQuote>The exclusivity ask is the real negotiation.</NoteQuote></NoteBlock>
+    <NoteBlock><TaskBlock label="Draft term sheet without the exclusivity clause" pill="Capital · SR" /></NoteBlock>
+    <NoteBlock><TaskBlock label="Send him the AVL one pager" pill="GTM · MS" pillColor="var(--magenta)" done /></NoteBlock>
+    <NoteBlock><p style={{color:'var(--ink-ghost)',fontSize:14.5,margin:0}}>/task</p></NoteBlock>
+    <SlashMenu items={[{glyph:'☑',label:'Task',hint:'creates a card',on:true},{glyph:'#',label:'Heading'},{glyph:'❝',label:'Quote'},{glyph:'⚑',label:'Decision',hint:'logs it'}]} />
+  </div>
+  <MetaRail sections={[{label:'Venture',value:'ImmiClaw',color:'var(--magenta-label)'},{label:'Mentions',value:'Dikkha AI, Chhar'},{label:'Tasks created',links:['Draft term sheet','Send one pager']},{label:'History',value:'12 versions'}]} />
+ </div>);
+</script></body></html>

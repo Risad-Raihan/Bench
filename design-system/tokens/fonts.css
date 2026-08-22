@@ -1,0 +1,8 @@
+/* Bench uses IBM Plex Sans + IBM Plex Mono, served from Google Fonts (the source reference links them the same way — no local binaries were provided). */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+:root{
+  --font-sans:'IBM Plex Sans',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+  /* alias used throughout the source reference */
+  --mono:'IBM Plex Mono',monospace; /* @kind font */
+}

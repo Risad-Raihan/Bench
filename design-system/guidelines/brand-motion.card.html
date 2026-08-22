@@ -1,0 +1,8 @@
+<!-- @dsCard group="Brand" viewport="700x180" name="Motion — under 150ms, nothing bounces" subtitle="Staggered 420ms rise on load; hover is a 2px nudge plus a surface step. One looping pulse for live sync." -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><style>html,body{margin:0}body{background:var(--bg);padding:18px 20px;font-size:13px}.g{display:flex;gap:8px}.c{flex:1;background:var(--panel);border:var(--hairline);border-left:2px solid var(--copper);padding:9px 10px;animation:avl-rise .42s var(--ease-rise) both;transition:transform .14s,background .14s,border-color .14s}.c:nth-child(2){animation-delay:.05s}.c:nth-child(3){animation-delay:.1s}.c:nth-child(4){animation-delay:.15s}.c:hover{background:var(--panel2);border-color:var(--line2);transform:translateX(2px)}.c h5{font-size:12.5px;font-weight:500;line-height:1.35}.c span{font-family:var(--font-mono);font-size:11px;color:var(--dim);display:block;margin-top:8px;letter-spacing:.06em}.sync{display:flex;align-items:center;gap:8px;margin-top:16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;color:var(--faint)}.pulse{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:avl-glow 2.2s ease-in-out infinite}</style></head><body><div class="g">
+<div class="c"><h5>Staggered rise</h5><span>420MS · +50MS EACH</span></div>
+<div class="c"><h5>Hover nudge</h5><span>140MS · TRANSLATEX 2PX</span></div>
+<div class="c"><h5>Surface step</h5><span>150MS · PANEL → PANEL2</span></div>
+<div class="c"><h5>No bounce, no scale</h5><span>EASE ONLY</span></div>
+</div>
+<div class="sync"><span class="pulse"></span>GOOGLE CALENDAR · SYNCED 14:22 +06 · TWO WAY</div></body></html>

@@ -1,0 +1,20 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Layout — panel, empty, loading" subtitle="Panel + SectionLabel, dashed EmptyState, Skeleton rows at real row geometry" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{background:var(--root);padding:14px}.f{border:1px solid var(--line);border-radius:3px;background:var(--bg);overflow:hidden;margin-bottom:12px}</style></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const { Panel, SectionLabel, EmptyState, Skeleton, SkeletonRow } = window.AVLHubDesignSystem_5531ba;
+ReactDOM.createRoot(document.getElementById('root')).render(
+ <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+  <div>
+   <Panel label="Facts" right="6"><div style={{fontSize:12.5,color:'var(--meta-ink)'}}>Panel body</div></Panel>
+   <div style={{marginBottom:12}}><SectionLabel color="var(--copper)" right="3">Tech</SectionLabel></div>
+   <Panel label="Loading" flush><SkeletonRow /><SkeletonRow /><SkeletonRow /></Panel>
+  </div>
+  <EmptyState hint="Drop a file above, or connect the venture's Drive folder." action="+ Upload">No docs yet</EmptyState>
+ </div>);
+</script></body></html>

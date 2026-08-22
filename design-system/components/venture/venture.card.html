@@ -1,0 +1,19 @@
+<!-- @dsCard group="Components" viewport="700x340" name="Venture — header, gates, tabs" subtitle="Header wash derived from the venture colour, five-cell gate rail, raised accent tabs" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{background:var(--root);padding:14px}.f{border:1px solid var(--line);border-radius:3px;background:var(--bg);overflow:hidden;margin-bottom:12px}</style></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const { VentureHeader, GateRail, VentureTabs } = window.AVLHubDesignSystem_5531ba;
+ReactDOM.createRoot(document.getElementById('root')).render(
+ <div className="f">
+  <VentureHeader name="ImmiClaw" color="var(--magenta)" sub="Study abroad automation for agents across West Africa"
+    tags={[{label:'45% AVL stake'},{label:'Rashedun Nabi'},{label:'19 days in stage',hot:true}]}
+    stage="Validate" stageMeta="4 of 6 gates cleared" />
+  <GateRail gates={[{stage:'Meet',label:'Cleared 11 Aug',state:'done'},{stage:'Validate',label:'Buyer interviews, 3 of 6',state:'now'},{stage:'Build',label:'Locked'},{stage:'Form',label:'Locked'},{stage:'Grow',label:'Locked'}]} />
+  <VentureTabs tabs={[{label:'Overview'},{label:'Docs',count:14},{label:'Notes',count:6},{label:'Tasks',count:11},{label:'Calendar',count:4},{label:'Decisions',count:3}]} active="Tasks" scope="ImmiClaw only" />
+ </div>);
+</script></body></html>

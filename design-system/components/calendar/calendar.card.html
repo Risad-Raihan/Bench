@@ -1,0 +1,22 @@
+<!-- @dsCard group="Components" viewport="700x340" name="Calendar — week, events, sync bar" subtitle="Venture-coloured events, violet note flags, looping teal sync pulse" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{margin:0}body{background:var(--root);padding:14px}.f{border:1px solid var(--line);border-radius:3px;background:var(--bg);overflow:hidden;margin-bottom:12px}</style></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const { WeekGrid, DayColumn, EventCard, SyncBar } = window.AVLHubDesignSystem_5531ba;
+ReactDOM.createRoot(document.getElementById('root')).render(
+ <div className="f">
+  <WeekGrid>
+   <DayColumn label="Mon 17"><EventCard time="10:00" title="Tunde intro call" flag="Note ready" color="var(--magenta)" /></DayColumn>
+   <DayColumn label="Tue 18"><EventCard time="14:30" title="Dikkha release review" flag="Note ready" color="var(--violet)" /><EventCard time="18:00" title="Personal · gym" color="var(--ash)" /></DayColumn>
+   <DayColumn label="Wed 19 · today" today><EventCard time="09:30" title="Partner sync, all four" flag="Note ready" /><EventCard time="16:00" title="Buyer interview 3 of 6" flag="+ Create note" color="var(--magenta)" /></DayColumn>
+   <DayColumn label="Thu 20"><EventCard time="11:00" title="Eloy Lab, regulatory update" flag="+ Create note" color="var(--amber)" /></DayColumn>
+   <DayColumn label="Fri 21"><EventCard time="15:00" title="Term sheet walkthrough" flag="+ Create note" color="var(--teal)" /></DayColumn>
+  </WeekGrid>
+  <SyncBar />
+ </div>);
+</script></body></html>

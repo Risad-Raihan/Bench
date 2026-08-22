@@ -1,0 +1,15 @@
+:root{
+  --radius-1:1px;  /* lane dot */
+  --radius-2:2px;  /* the default: chips, tags, cards, buttons, swatches */
+  --radius-3:3px;  /* app frame, slash menu */
+  --radius-pill:50%; /* only the sync pulse */
+
+  --hairline:1px solid var(--line);
+  --hairline-hover:1px solid var(--line2);
+  --accent-edge:3px;  /* venture card left edge */
+  --accent-edge-sm:2px; /* task card / event / quote left edge */
+  --rule-thick:2px;   /* active tab + gate progress rule */
+
+  /* the system has no shadows except one: the floating slash menu */
+  --shadow-menu:0 14px 34px rgba(0,0,0,.6);
+}

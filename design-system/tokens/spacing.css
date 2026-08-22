@@ -1,0 +1,37 @@
+:root{
+  --sp-1:1px;   /* grid gap */
+  --sp-2:2px;
+  --sp-4:4px;
+  --sp-5:5px;
+  --sp-6:6px;
+  --sp-7:7px;
+  --sp-8:8px;
+  --sp-9:9px;
+  --sp-10:10px;
+  --sp-11:11px;
+  --sp-12:12px;
+  --sp-13:13px;
+  --sp-14:14px;
+  --sp-16:16px;
+  --sp-18:18px;
+  --sp-20:20px;
+  --sp-22:22px;  /* standard page-header padding */
+  --sp-24:24px;
+  --sp-26:26px;
+  --sp-28:28px;  /* document gutter */
+  --sp-34:34px;
+  --sp-44:44px;
+  --sp-60:60px;
+  --sp-64:64px;
+
+  /* fixed widths from the source layouts */
+  --w-doc:1340px;      /* document max width */
+  --w-side:216px;      /* notes sidebar */
+  --w-meta:200px;      /* notes metadata rail */
+  --w-slash:290px;     /* slash menu */
+  --w-prose:720px;     /* prose measure */
+  --size-avatar:19px;  /* who chip + brand mark */
+  --size-box:14px;     /* checkbox */
+  --size-dot:7px;      /* lane dot */
+  --size-swatch:12px;
+}

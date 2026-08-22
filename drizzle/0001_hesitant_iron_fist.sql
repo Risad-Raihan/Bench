@@ -1,0 +1,1 @@
+ALTER TABLE "ventures" ADD COLUMN "color" text;

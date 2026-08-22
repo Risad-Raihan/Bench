@@ -1,69 +1,137 @@
-import Image from "next/image";
+import { eq, inArray } from "drizzle-orm";
+import { db } from "@/db";
+import { gateItems, tasks, users, ventures } from "@/db/schema";
+import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
+import { ventureColor } from "@/lib/venture-colors";
+import {
+  PipelineView,
+  type PipelineStageColumn,
+  type PipelineStat,
+} from "@/components/PipelineView";
 
-export default function Home() {
+export default async function PipelinePage() {
+  const now = new Date();
+
+  const ventureRows = await db
+    .select({
+      id: ventures.id,
+      slug: ventures.slug,
+      name: ventures.name,
+      oneLiner: ventures.oneLiner,
+      color: ventures.color,
+      stage: ventures.stage,
+      equityPct: ventures.equityPct,
+      founderName: ventures.founderName,
+      stageEnteredAt: ventures.stageEnteredAt,
+      boardPosition: ventures.boardPosition,
+      ownerInitials: users.initials,
+    })
+    .from(ventures)
+    .leftJoin(users, eq(ventures.ownerId, users.id))
+    .where(eq(ventures.status, "active"));
+
+  const ventureIds = ventureRows.map((v) => v.id);
+
+  const gateRows = ventureIds.length
+    ? await db
+        .select({
+          ventureId: gateItems.ventureId,
+          stage: gateItems.stage,
+          doneAt: gateItems.doneAt,
+        })
+        .from(gateItems)
+        .where(inArray(gateItems.ventureId, ventureIds))
+    : [];
+
+  const taskRows = ventureIds.length
+    ? await db
+        .select({
+          ventureId: tasks.ventureId,
+          status: tasks.status,
+          dueDate: tasks.dueDate,
+        })
+        .from(tasks)
+        .where(inArray(tasks.ventureId, ventureIds))
+    : [];
+
+  const gatesByVenture = new Map<string, { total: number; done: number }>();
+  for (const g of gateRows) {
+    const v = ventureRows.find((v) => v.id === g.ventureId);
+    if (!v || g.stage !== v.stage) continue; // gate rail shows the current stage only
+    const acc = gatesByVenture.get(g.ventureId) ?? { total: 0, done: 0 };
+    acc.total += 1;
+    if (g.doneAt) acc.done += 1;
+    gatesByVenture.set(g.ventureId, acc);
+  }
+
+  const staleVentures = ventureRows.filter((v) => isStale(v.stageEnteredAt, now));
+  const stakes = ventureRows
+    .map((v) => v.equityPct)
+    .filter((v): v is number => v != null);
+  const avgStakePct =
+    stakes.length > 0
+      ? ((stakes.reduce((a, b) => a + b, 0) / stakes.length) * 100).toFixed(1)
+      : "—";
+  const avgDaysInStage =
+    ventureRows.length > 0
+      ? Math.round(
+          ventureRows.reduce((sum, v) => sum + daysSince(v.stageEnteredAt, now), 0) /
+            ventureRows.length,
+        ).toString()
+      : "—";
+
+  const openTasks = taskRows.filter((t) => t.status !== "done");
+  const weekFromNow = new Date(now.getTime() + 7 * 86_400_000);
+  const dueThisWeek = openTasks.filter(
+    (t) => t.dueDate && new Date(t.dueDate) <= weekFromNow && new Date(t.dueDate) >= now,
+  );
+
+  const stages: PipelineStageColumn[] = STAGES.map(({ stage, label, color }, index) => {
+    const stageVentures = ventureRows
+      .filter((v) => v.stage === stage)
+      .sort((a, b) => a.boardPosition - b.boardPosition)
+      .map((v) => {
+        const gates = gatesByVenture.get(v.id) ?? { total: 6, done: 0 };
+        const stale = isStale(v.stageEnteredAt, now);
+        return {
+          id: v.id,
+          slug: v.slug,
+          name: v.name,
+          caption: v.oneLiner ?? "",
+          color: ventureColor(v.color),
+          gates: gates.done,
+          gateTotal: gates.total,
+          who: v.ownerInitials ?? "—",
+          founder: v.founderName ?? "",
+          flag: stale ? `STALE ${daysSince(v.stageEnteredAt, now)}D` : undefined,
+        };
+      });
+    return {
+      stage,
+      label,
+      color,
+      count: String(stageVentures.length).padStart(2, "0"),
+      progress: stageVentures.length > 0 ? index + 1 : 0,
+      ventures: stageVentures,
+    };
+  });
+
+  const stats: PipelineStat[] = [
+    { value: ventureRows.length, label: "active ventures" },
+    { value: openTasks.length, label: "open tasks" },
+    { value: dueThisWeek.length, label: "due this week" },
+    { value: staleVentures.length, label: "stalled" },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <PipelineView
+      stages={stages}
+      kpis={{
+        needAttention: staleVentures.length,
+        avgStakePct,
+        avgDaysInStage,
+      }}
+      stats={stats}
+    />
   );
 }

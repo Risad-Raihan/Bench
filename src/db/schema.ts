@@ -56,7 +56,38 @@ export const taskStatus = pgEnum("task_status", [
 
 export const priority = pgEnum("priority", ["low", "normal", "high"]);
 
-export const userRole = pgEnum("user_role", ["partner", "admin", "viewer"]);
+// "founder" is an external account: a founder signs in and sees exactly one
+// venture (their own), linked via ventureMembers. partner/admin/viewer are
+// all internal studio roles. Append only — order is not significant but
+// existing values must not move.
+export const userRole = pgEnum("user_role", [
+  "partner",
+  "admin",
+  "viewer",
+  "founder",
+]);
+
+// Role of a user within a single venture's membership. A founder is the
+// external owner of the venture page; a collaborator is someone they invite
+// (co-founder, advisor) — same access scope, different label.
+export const ventureMemberRole = pgEnum("venture_member_role", [
+  "founder",
+  "collaborator",
+]);
+
+// Row-level visibility for founder-facing content. Everything is "studio"
+// (internal only) by default; "shared" is an explicit opt-in that makes a
+// row visible to the venture's founder users.
+export const visibility = pgEnum("visibility", ["studio", "shared"]);
+
+// Lifecycle of an inbound website application. "new" lands from POST
+// /api/intake, flips to "reviewing" once a venture is created from it.
+export const applicationStatus = pgEnum("application_status", [
+  "new",
+  "reviewing",
+  "approved",
+  "passed",
+]);
 
 export const entityType = pgEnum("entity_type", [
   "venture",
@@ -196,6 +227,8 @@ export const docs = pgTable(
     sizeBytes: integer("size_bytes").notNull(),
     storageKey: text("storage_key").notNull(), // GCS or Vercel Blob object key
     folder: text("folder"), // simple string path, do not build a folder table
+    // "studio" (default) is internal-only; "shared" is visible to founder users.
+    visibility: visibility("visibility").notNull().default("studio"),
     // Version chain: a new upload points at the doc it supersedes.
     supersedesId: uuid("supersedes_id"),
     uploadedBy: uuid("uploaded_by").references(() => users.id),
@@ -228,6 +261,8 @@ export const notes = pgTable(
     content: jsonb("content").$type<unknown>().notNull().default({}),
     plainText: text("plain_text").notNull().default(""),
     isFavorite: boolean("is_favorite").notNull().default(false),
+    // "studio" (default) is internal-only; "shared" is visible to founder users.
+    visibility: visibility("visibility").notNull().default("studio"),
     createdBy: uuid("created_by").references(() => users.id),
     lastEditedBy: uuid("last_edited_by").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -394,6 +429,10 @@ export const decisions = pgTable("decisions", {
   }),
   title: text("title").notNull(),
   rationale: text("rationale"),
+  // One-line addition for parity with notes/docs: "studio" (default) is
+  // internal-only, "shared" is visible to founder users. Founder-facing
+  // decision surfacing is not built yet — see docs/founder-access.md.
+  visibility: visibility("visibility").notNull().default("studio"),
   decidedBy: uuid("decided_by").references(() => users.id),
   decidedAt: timestamp("decided_at", { withTimezone: true }).defaultNow().notNull(),
   sourceNoteId: uuid("source_note_id").references(() => notes.id, {
@@ -459,3 +498,98 @@ export const stageTemplates = pgTable("stage_templates", {
   sortOrder: integer("sort_order").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
 });
+
+/* ---------------------------------------------------------------------------
+   VENTURE MEMBERS
+   How an external founder user is linked to the one venture they can see.
+   This is deliberately separate from ventures.ownerId — ownerId stays the
+   internal partner who runs the venture; membership is the founder side.
+--------------------------------------------------------------------------- */
+
+export const ventureMembers = pgTable(
+  "venture_members",
+  {
+    ventureId: uuid("venture_id")
+      .notNull()
+      .references(() => ventures.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: ventureMemberRole("role").notNull().default("founder"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.ventureId, t.userId] }),
+    // "which ventures can this user see"
+    userIdx: index("venture_members_user_idx").on(t.userId),
+  })
+);
+
+/* ---------------------------------------------------------------------------
+   APPLICATIONS
+   The intake inbox. Every submission to the marketing site's Apply form
+   lands here as one row via POST /api/intake, then is promoted to a venture
+   in the Meet stage. Approved-or-not, we keep the row.
+--------------------------------------------------------------------------- */
+
+export const applications = pgTable(
+  "applications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    status: applicationStatus("status").notNull().default("new"),
+    // Set once a venture is created from this application (see promote.ts).
+    ventureId: uuid("venture_id").references(() => ventures.id, {
+      onDelete: "set null",
+    }),
+
+    // Applicant identity. NB: column is applicant_role, NOT current_role —
+    // current_role is a Postgres reserved word. The inbound multipart field
+    // from the site is still "currentRole"; it's mapped on the way in.
+    companyName: text("company_name").notNull(),
+    founderName: text("founder_name").notNull(),
+    founderEmail: text("founder_email").notNull(),
+    linkedin: text("linkedin"),
+    location: text("location"),
+    applicantRole: text("applicant_role"),
+
+    // Questionnaire answers — one column per question, all free text.
+    domain: text("domain"),
+    domainExperience: text("domain_experience"),
+    domainInsight: text("domain_insight"),
+    problem: text("problem"),
+    customer: text("customer"),
+    currentSolution: text("current_solution"),
+    evidence: text("evidence"),
+    customerIntros: text("customer_intros"),
+    marketSize: text("market_size"),
+    competition: text("competition"),
+    whyNow: text("why_now"),
+    whyAi: text("why_ai"),
+    commitment: text("commitment"),
+    priorProgress: text("prior_progress"),
+    studioNeed: text("studio_need"),
+    notes: text("notes"),
+
+    // Pitch deck upload. All nullable — a deck is expected but we still store
+    // the row if the upload failed.
+    deckStorageKey: text("deck_storage_key"),
+    deckName: text("deck_name"),
+    deckMimeType: text("deck_mime_type"),
+    deckSizeBytes: integer("deck_size_bytes"),
+
+    source: text("source"), // utm / referrer string from the site
+    rawPayload: jsonb("raw_payload")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+
+    reviewedBy: uuid("reviewed_by").references(() => users.id),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    reviewNote: text("review_note"),
+
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    inboxIdx: index("applications_status_idx").on(t.status, t.createdAt),
+  })
+);

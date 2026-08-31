@@ -8,6 +8,21 @@ one venture through `venture_members`. The schema and two helpers now exist:
 - `venture_members` join table, `visibility` enum (`studio` | `shared`) on
   `notes`, `docs` and `decisions`.
 
+> **Grilling decisions (see `docs/adr/`).** Enforcement is the data-access
+> module `src/lib/data/**` guarded by a lint rule, not scattered `if` branches
+> (ADR-0006). Auth is split — magic link for founders (ADR-0001). Additional
+> rules settled during grilling:
+> - **Mentions:** a `studio` note that `@`-mentions a founder's venture does
+>   **not** surface to that founder. Only `shared` notes do. Same for the
+>   "Mentioned" grouping on the venture Notes tab.
+> - **Tasks:** the venture Tasks board is **partner-only**. `tasks` has no
+>   `visibility` column; founders do not see the Tasks tab at all.
+> - **Gates:** partner-only. Founders never see or clear gates.
+> - **Notifications:** `notifications` is not founder-scoped yet. Founder-facing
+>   activity is an allow-list of verbs (§7), built as part of this work.
+> - **Kill switch:** `getCurrentUser()` checks `users.disabled_at`; a disabled
+>   founder is locked out on their next request regardless of JWT expiry.
+
 What does **not** exist yet: any enforcement. Today every query assumes an
 internal partner. Before a founder login is safe to hand out, all of the
 following must be done.

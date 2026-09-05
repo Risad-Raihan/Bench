@@ -1,5 +1,13 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Testing
+
+```bash
+npm test
+```
+
+See `docs/testing.md` for where tests live and the database strategy.
+
 ## Getting Started
 
 First, run the development server:

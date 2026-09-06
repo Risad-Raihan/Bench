@@ -1,6 +1,7 @@
 "use client";
 
 import { Extension, type Editor, type Range } from "@tiptap/core";
+import { PluginKey } from "@tiptap/pm/state";
 import { ReactRenderer } from "@tiptap/react";
 import Suggestion, {
   type SuggestionKeyDownProps,
@@ -194,6 +195,10 @@ export const SlashCommand = Extension.create({
     const items = captureItems({ noteId });
     return [
       Suggestion({
+        // Distinct key: the mention extension also builds a @tiptap/suggestion
+        // plugin, and two plugins sharing the default "suggestion" key crash
+        // the editor ("Adding different instances of a keyed plugin").
+        pluginKey: new PluginKey("slashCommand"),
         editor: this.editor,
         char: "/",
         items: ({ query }: { query: string }) => {

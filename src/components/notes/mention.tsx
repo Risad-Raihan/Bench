@@ -1,6 +1,7 @@
 "use client";
 
 import { Node, mergeAttributes, type Editor, type Range } from "@tiptap/core";
+import { PluginKey } from "@tiptap/pm/state";
 import { ReactRenderer } from "@tiptap/react";
 import Suggestion, {
   type SuggestionKeyDownProps,
@@ -146,6 +147,9 @@ export const VentureMention = Node.create({
     const ventures = this.options.ventures as MentionableVenture[];
     return [
       Suggestion({
+        // Distinct key so this doesn't collide with the slash-command
+        // suggestion plugin (both use @tiptap/suggestion).
+        pluginKey: new PluginKey("ventureMention"),
         editor: this.editor,
         char: "@",
         items: ({ query }: { query: string }) => {

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { interimAuthEnabled } from "@/lib/auth/interim";
 
 export default async function SignInPage({
   searchParams,
@@ -13,6 +15,21 @@ export default async function SignInPage({
   const session = await auth();
   const { error } = await searchParams;
   const disabled = Boolean(session?.userId);
+  const interim = interimAuthEnabled();
+
+  const btn: React.CSSProperties = {
+    fontFamily: "var(--font-mono)",
+    fontSize: 11,
+    letterSpacing: ".14em",
+    textTransform: "uppercase",
+    padding: "6px 11px",
+    cursor: "pointer",
+    borderRadius: 2,
+    border: "1px solid var(--copper)",
+    color: "var(--copper)",
+    background: "var(--copper-wash)",
+    transition: "background var(--dur-fast)",
+  };
 
   return (
     <div
@@ -71,7 +88,9 @@ export default async function SignInPage({
               color: "var(--body-ink)",
             }}
           >
-            Partners sign in with an aponvlab.io Google account.
+            {interim
+              ? "Partners sign in with their aponvlab.io email and the password they were given."
+              : "Partners sign in with an aponvlab.io Google account."}
           </p>
           {disabled ? (
             <p
@@ -99,38 +118,74 @@ export default async function SignInPage({
             >
               {error === "AccessDenied"
                 ? "That Google account is not on the partner list."
-                : "Sign-in failed. Try again."}
+                : error === "CredentialsSignin"
+                  ? "Wrong email or password."
+                  : "Sign-in failed. Try again."}
             </p>
           ) : null}
-          <form
-            action={async () => {
-              "use server";
-              await signIn("google", { redirectTo: "/" });
-            }}
-          >
-            <button
-              type="submit"
-              className="signin-google"
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                letterSpacing: ".14em",
-                textTransform: "uppercase",
-                padding: "6px 11px",
-                cursor: "pointer",
-                borderRadius: 2,
-                border: "1px solid var(--copper)",
-                color: "var(--copper)",
-                background: "var(--copper-wash)",
-                transition: "background var(--dur-fast)",
+          {interim ? (
+            <form
+              action={async (formData: FormData) => {
+                "use server";
+                try {
+                  await signIn("interim", {
+                    email: String(formData.get("email") ?? ""),
+                    password: String(formData.get("password") ?? ""),
+                    redirectTo: "/",
+                  });
+                } catch (err) {
+                  if (err instanceof AuthError) {
+                    redirect("/signin?error=CredentialsSignin");
+                  }
+                  throw err;
+                }
+              }}
+              style={{ display: "grid", gap: 8, marginBottom: 16 }}
+            >
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="you@aponvlab.io"
+                autoComplete="username"
+                className="signin-field"
+              />
+              <input
+                name="password"
+                type="password"
+                required
+                placeholder="Password"
+                autoComplete="current-password"
+                className="signin-field"
+              />
+              <button type="submit" className="signin-google" style={btn}>
+                Sign in
+              </button>
+            </form>
+          ) : null}
+          {interim ? null : (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("google", { redirectTo: "/" });
               }}
             >
-              Continue with Google
-            </button>
-          </form>
+              <button type="submit" className="signin-google" style={btn}>
+                Continue with Google
+              </button>
+            </form>
+          )}
         </div>
       </div>
-      <style>{`.signin-google:hover{background:var(--copper-tint)}`}</style>
+      <style>{`
+        .signin-google:hover{background:var(--copper-tint)}
+        .signin-field{
+          font-family:var(--font-mono);font-size:12px;padding:7px 9px;
+          border-radius:2px;border:1px solid var(--line);
+          background:var(--bg2);color:var(--ink);
+        }
+        .signin-field:focus{outline:none;border-color:var(--copper)}
+      `}</style>
     </div>
   );
 }

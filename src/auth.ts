@@ -10,6 +10,10 @@ import {
   isPartnerGoogleSignIn,
   normalizeEmail,
 } from "@/lib/auth/partners";
+import {
+  interimAuthEnabled,
+  interimCredentialsProvider,
+} from "@/lib/auth/interim";
 import type { UserRole } from "@/lib/auth/resolve";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -34,6 +38,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
     }),
+    // INTERIM: partner email+password, until the Google OAuth client lands (S2).
+    ...(interimAuthEnabled() ? [interimCredentialsProvider()] : []),
   ],
   callbacks: {
     authorized({ request, auth: session }) {
@@ -48,6 +54,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return false;
     },
     async signIn({ account, profile }) {
+      // INTERIM: interimCredentialsProvider.authorize() has already checked the
+      // allowlist and the disabled flag.
+      if (account?.provider === "interim") return true;
       if (account?.provider !== "google") return false;
       const google = profile as GoogleProfile | undefined;
       if (

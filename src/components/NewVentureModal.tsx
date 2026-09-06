@@ -68,6 +68,7 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [line, setLine] = useState("");
   const [founder, setFounder] = useState("");
+  const [founderEmail, setFounderEmail] = useState("");
   const [color, setColor] = useState("var(--copper)");
   const [deck, setDeck] = useState<File | null>(null);
   const [drag, setDrag] = useState(false);
@@ -82,11 +83,16 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
 
   const create = () => {
     if (pending) return;
+    if (!name.trim()) {
+      setError("A name is required.");
+      return;
+    }
     setError(null);
     const form = new FormData();
-    form.set("name", name.trim() || "Untitled venture");
+    form.set("name", name.trim());
     form.set("oneLiner", line);
     form.set("founderName", founder);
+    form.set("founderEmail", founderEmail);
     form.set("color", color);
     if (deck) form.set("deck", deck);
     startTransition(async () => {
@@ -96,7 +102,7 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
         return;
       }
       onClose();
-      router.push(`/v/${result.slug}`);
+      router.refresh();
     });
   };
 
@@ -108,9 +114,12 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
       width={520}
       footer={
         <>
-          <ActionButton onClick={create}>Create and open</ActionButton>
+          <ActionButton onClick={create}>
+            {pending ? "Adding…" : "Add to pipeline"}
+          </ActionButton>
           <span style={{ fontSize: 11.5, color: error ? "var(--amber)" : "var(--faint)" }}>
-            {error ?? "Lands in Meet. Everything else is editable later."}
+            {error ??
+              "Lands in Application. Drag it to Meet when you set a meeting."}
           </span>
         </>
       }
@@ -135,6 +144,13 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
         value={founder}
         onChange={setFounder}
         placeholder="Tunde Adeyemi"
+        optional
+      />
+      <TextField
+        label="Founder email"
+        value={founderEmail}
+        onChange={setFounderEmail}
+        placeholder="tunde@immiclaw.com"
         optional
       />
       <SwatchPicker
@@ -168,7 +184,7 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
           }
           hint={
             deck
-              ? "Click to remove · lands in Docs / Diligence"
+              ? "Click to remove · attaches to the venture on engage"
               : "or click to browse · PDF or PPTX · optional"
           }
         />

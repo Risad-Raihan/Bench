@@ -100,9 +100,28 @@ export function PipelineView({
     });
   };
 
+  const engageFromBoard = (applicationId: string) => {
+    if (busy) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await engageApplicationAction(applicationId);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    });
+  };
+
   const requestMove = (card: PipelineVentureCard, toStage: string) => {
-    if (card.kind === "application" || !card.stage) return;
-    if (!isStage(toStage) || card.stage === toStage) return;
+    if (!isStage(toStage)) return;
+    if (card.kind === "application") {
+      // Dragging an application onto any real stage column engages it —
+      // the venture is always born in Meet (ADR-0002).
+      engageFromBoard(card.id);
+      return;
+    }
+    if (!card.stage || card.stage === toStage) return;
     if (reasonRequired(card.stage, toStage, card.openGates ?? 0)) {
       setError(null);
       setPending({
@@ -161,7 +180,26 @@ export function PipelineView({
             >
               {col.ventures.map((v, i) =>
                 v.kind === "application" ? (
-                  <ApplicationCard key={v.id} card={v} rise={i} />
+                  <div
+                    key={v.id}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData(DRAG_TYPE, v.id);
+                      e.dataTransfer.effectAllowed = "move";
+                      dragged.current = true;
+                      setDraggingId(v.id);
+                    }}
+                    onDragEnd={() => {
+                      setDraggingId(null);
+                      setOverStage(null);
+                      window.setTimeout(() => {
+                        dragged.current = false;
+                      }, 0);
+                    }}
+                    style={{ opacity: draggingId === v.id ? 0.45 : 1 }}
+                  >
+                    <ApplicationCard card={v} rise={i} />
+                  </div>
                 ) : (
                   <div
                     key={v.id}

@@ -60,7 +60,7 @@ export default async function PipelinePage() {
         gates: 0,
         gateTotal: 0,
         who: "—",
-        founder: a.founderName,
+        founder: a.founderName ?? "",
         flag: stale ? `STALE ${daysSince(a.createdAt, now)}D` : undefined,
         kind: "application" as const,
       };

@@ -39,6 +39,9 @@ export async function createVentureFromApplication(
       market: application.marketSize,
       founderName: application.founderName,
       founderEmail: application.founderEmail,
+      // A manual add can carry a colour chosen in the modal; a website
+      // submission has none and createVenture auto-assigns.
+      color: application.color,
     },
     {
       actorId,

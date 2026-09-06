@@ -22,7 +22,13 @@ table** (`status in ('new','reviewing')`).
 
 - `POST /api/intake` only writes the `applications` row. It no longer creates a
   venture.
-- **Engage** runs `createVentureFromApplication` (still the one and only
+- **"+ New Venture"** (a partner adding a lead by hand) also writes only an
+  `applications` row (`source = 'manual'`, `founder_name` / `founder_email`
+  optional, an optional chosen `color` stashed for engage-time). It lands in the
+  Application column exactly like a website submission — there is no direct
+  partner path to a `ventures` row.
+- **Engage** — the Engage button *or* dragging the card onto a real stage
+  column — runs `createVentureFromApplication` (still the one and only
   application→venture path) with the engaging partner as `actorId`; venture is
   born in `meet`; `applications.status = 'approved'`, `applications.venture_id`
   linked.

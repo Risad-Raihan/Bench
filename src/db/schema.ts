@@ -599,8 +599,13 @@ export const applications = pgTable(
     // current_role is a Postgres reserved word. The inbound multipart field
     // from the site is still "currentRole"; it's mapped on the way in.
     companyName: text("company_name").notNull(),
-    founderName: text("founder_name").notNull(),
-    founderEmail: text("founder_email").notNull(),
+    // Nullable: a partner adding a lead by hand may only have the company name.
+    // The website form still always sends both.
+    founderName: text("founder_name"),
+    founderEmail: text("founder_email"),
+    // Chosen in the New Venture modal; applied when the venture is created on
+    // Engage. Null for website submissions (colour is auto-assigned then).
+    color: text("color"),
     linkedin: text("linkedin"),
     location: text("location"),
     applicantRole: text("applicant_role"),

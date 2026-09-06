@@ -18,12 +18,60 @@ export type PartnerApplication = {
   id: string;
   status: ApplicationStatus;
   companyName: string;
-  founderName: string;
-  founderEmail: string;
+  founderName: string | null;
+  founderEmail: string | null;
   problem: string | null;
   createdAt: Date;
   rawPayload: Record<string, unknown>;
 };
+
+export type ManualApplicationInput = {
+  companyName: string;
+  problem?: string | null;
+  founderName?: string | null;
+  founderEmail?: string | null;
+  color?: string | null;
+  deck?: {
+    storageKey: string;
+    name: string;
+    mimeType: string;
+    sizeBytes: number;
+  } | null;
+};
+
+/**
+ * A partner adding a lead to the pipeline by hand. Lands in the Application
+ * column (`status = 'new'`, `source = 'manual'`) exactly like a website
+ * submission; Engage turns it into a venture in Meet (ADR-0002).
+ */
+export async function createManualApplication(
+  user: CurrentUser,
+  input: ManualApplicationInput,
+  executor: typeof db = db,
+): Promise<{ id: string } | null> {
+  if (!isInternalUser(user)) return null;
+  const companyName = input.companyName.trim();
+  if (!companyName) throw new Error("A name is required.");
+
+  const [row] = await executor
+    .insert(applications)
+    .values({
+      status: "new",
+      source: "manual",
+      companyName,
+      problem: input.problem?.trim() || null,
+      founderName: input.founderName?.trim() || null,
+      founderEmail: input.founderEmail?.trim().toLowerCase() || null,
+      color: input.color ?? null,
+      deckStorageKey: input.deck?.storageKey ?? null,
+      deckName: input.deck?.name ?? null,
+      deckMimeType: input.deck?.mimeType ?? null,
+      deckSizeBytes: input.deck?.sizeBytes ?? null,
+      rawPayload: { addedBy: user.id },
+    })
+    .returning({ id: applications.id });
+  return row ?? null;
+}
 
 export type FounderApplication = Omit<PartnerApplication, "rawPayload">;
 

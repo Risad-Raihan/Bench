@@ -84,3 +84,26 @@ export async function getApplication(
     .limit(1);
   return row ?? null;
 }
+
+export async function findApplicationById(
+  applicationId: string,
+  executor: typeof db = db,
+) {
+  const [row] = await executor
+    .select()
+    .from(applications)
+    .where(eq(applications.id, applicationId))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function linkApprovedApplication(
+  applicationId: string,
+  ventureId: string,
+  executor: typeof db = db,
+) {
+  await executor
+    .update(applications)
+    .set({ ventureId, status: "approved" })
+    .where(eq(applications.id, applicationId));
+}

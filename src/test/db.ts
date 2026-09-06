@@ -26,3 +26,11 @@ export async function truncateActivityGraph(
     sql`TRUNCATE TABLE notifications, activity, tasks, ventures, users RESTART IDENTITY CASCADE`,
   );
 }
+
+export async function truncateVentureBirthGraph(
+  executor: ReturnType<typeof getTestDb>,
+) {
+  await executor.execute(
+    sql`TRUNCATE TABLE notifications, activity, docs, gate_items, venture_stage_events, applications, tasks, ventures, users, stage_templates RESTART IDENTITY CASCADE`,
+  );
+}

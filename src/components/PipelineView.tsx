@@ -13,6 +13,7 @@ import {
   VentureCard,
 } from "../../design-system/components/pipeline/VentureCard.jsx";
 import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
+import { useNewVenture } from "./NewVentureModal";
 
 export interface PipelineVentureCard {
   id: string;
@@ -57,6 +58,7 @@ export function PipelineView({
   stats: PipelineStat[];
 }) {
   const router = useRouter();
+  const { open } = useNewVenture();
   return (
     <>
       <PageHeader
@@ -66,7 +68,7 @@ export function PipelineView({
             <Kpi value={kpis.needAttention} label="need you" hot />
             <Kpi value={kpis.avgStakePct} label="avg stake %" />
             <Kpi value={kpis.avgDaysInStage} label="avg days in stage" />
-            <ActionButton onClick={() => {}}>+ New venture</ActionButton>
+            <ActionButton onClick={open}>+ New venture</ActionButton>
           </>
         }
       />

@@ -81,7 +81,8 @@ export const ventureMemberRole = pgEnum("venture_member_role", [
 export const visibility = pgEnum("visibility", ["studio", "shared"]);
 
 // Lifecycle of an inbound website application. "new" lands from POST
-// /api/intake, flips to "reviewing" once a venture is created from it.
+// /api/intake; engage sets "approved" and links a venture. "reviewing" is
+// an in-progress screen state. "passed" leaves the intake column.
 export const applicationStatus = pgEnum("application_status", [
   "new",
   "reviewing",

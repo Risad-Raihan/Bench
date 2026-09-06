@@ -8,11 +8,13 @@ import { db } from "@/db";
 import {
   events,
   gateItems,
+  stageTemplates,
   tasks,
   users,
   ventureStageEvents,
   ventures,
   type potential,
+  type ventureStage,
   type ventureStatus,
 } from "@/db/schema";
 import {
@@ -23,8 +25,11 @@ import {
 import type { Lane, TaskStatus } from "@/lib/lanes";
 import type { Stage } from "@/lib/pipeline-stages";
 
+export type Executor = typeof db;
+
 type Potential = (typeof potential.enumValues)[number];
 type VentureStatus = (typeof ventureStatus.enumValues)[number];
+type StageValue = (typeof ventureStage.enumValues)[number];
 
 export type PartnerVenture = {
   id: string;
@@ -263,4 +268,113 @@ export async function countEvents(
     .from(events)
     .where(and(eq(events.ventureId, ventureId), isNull(events.deletedAt)));
   return row?.n ?? 0;
+}
+
+export async function listUsedVentureColors(
+  executor: Executor = db,
+): Promise<(string | null)[]> {
+  const rows = await executor
+    .select({ color: ventures.color })
+    .from(ventures)
+    .where(eq(ventures.status, "active"));
+  return rows.map((row) => row.color);
+}
+
+export async function isSlugTaken(
+  slug: string,
+  executor: Executor = db,
+): Promise<boolean> {
+  const existing = await executor
+    .select({ id: ventures.id })
+    .from(ventures)
+    .where(eq(ventures.slug, slug))
+    .limit(1);
+  return existing.length > 0;
+}
+
+export type InsertVentureValues = {
+  slug: string;
+  name: string;
+  oneLiner: string | null;
+  market: string | null;
+  stage: StageValue;
+  status: VentureStatus;
+  color: string;
+  founderName: string | null;
+  founderEmail: string | null;
+  potential: Potential | null;
+  ownerId: string | null;
+  createdBy: string | null;
+};
+
+export async function insertVenture(
+  values: InsertVentureValues,
+  executor: Executor = db,
+) {
+  const [row] = await executor.insert(ventures).values(values).returning();
+  if (!row) throw new Error("venture insert returned no row");
+  return row;
+}
+
+export async function insertBirthStageEvent(
+  values: {
+    ventureId: string;
+    actorId: string | null;
+  },
+  executor: Executor = db,
+) {
+  await executor.insert(ventureStageEvents).values({
+    ventureId: values.ventureId,
+    fromStage: null,
+    toStage: "meet",
+    actorId: values.actorId,
+  });
+}
+
+export async function listActiveGateTemplates(
+  stage: StageValue,
+  executor: Executor = db,
+) {
+  const rows = await executor
+    .select()
+    .from(stageTemplates)
+    .where(
+      and(
+        eq(stageTemplates.stage, stage),
+        eq(stageTemplates.kind, "gate"),
+        eq(stageTemplates.isActive, true),
+      ),
+    );
+  return rows.sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function insertGateItemsForVenture(
+  values: {
+    ventureId: string;
+    stage: StageValue;
+    templates: { label: string; sortOrder: number }[];
+  },
+  executor: Executor = db,
+) {
+  if (values.templates.length === 0) return;
+  await executor.insert(gateItems).values(
+    values.templates.map((t) => ({
+      ventureId: values.ventureId,
+      stage: values.stage,
+      label: t.label,
+      sortOrder: t.sortOrder,
+    })),
+  );
+}
+
+export async function getVentureById(
+  ventureId: string,
+  executor: Executor = db,
+) {
+  const [row] = await executor
+    .select()
+    .from(ventures)
+    .where(eq(ventures.id, ventureId))
+    .limit(1);
+  return row ?? null;
 }

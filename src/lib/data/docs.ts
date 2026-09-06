@@ -100,3 +100,35 @@ export async function countDocs(
     .where(and(eq(docs.ventureId, ventureId), isNull(docs.archivedAt)));
   return row?.n ?? 0;
 }
+
+export type InsertDocValues = {
+  ventureId: string;
+  name: string;
+  mimeType: string;
+  sizeBytes: number;
+  storageKey: string;
+  folder?: string | null;
+  uploadedBy?: string | null;
+  visibility?: Visibility;
+};
+
+export async function insertDoc(
+  values: InsertDocValues,
+  executor: typeof db = db,
+) {
+  const [row] = await executor
+    .insert(docs)
+    .values({
+      ventureId: values.ventureId,
+      name: values.name,
+      mimeType: values.mimeType,
+      sizeBytes: values.sizeBytes,
+      storageKey: values.storageKey,
+      folder: values.folder ?? null,
+      uploadedBy: values.uploadedBy ?? null,
+      visibility: values.visibility ?? "studio",
+    })
+    .returning();
+  if (!row) throw new Error("doc insert returned no row");
+  return row;
+}

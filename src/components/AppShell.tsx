@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { AppBar } from "../../design-system/components/chrome/AppBar.jsx";
+import { NewVentureProvider, useNewVenture } from "./NewVentureModal";
 
 const NAV_ROUTES: Record<string, string> = {
   Pipeline: "/",
@@ -24,8 +25,23 @@ export function AppShell({
   children: React.ReactNode;
   unreadCount: number;
 }) {
+  return (
+    <NewVentureProvider>
+      <AppShellChrome unreadCount={unreadCount}>{children}</AppShellChrome>
+    </NewVentureProvider>
+  );
+}
+
+function AppShellChrome({
+  children,
+  unreadCount,
+}: {
+  children: React.ReactNode;
+  unreadCount: number;
+}) {
   const pathname = usePathname();
   const router = useRouter();
+  const { open } = useNewVenture();
   const inVenture = pathname.startsWith("/v/");
   const active = ROUTE_LABELS[pathname] ?? "Pipeline";
 
@@ -46,7 +62,7 @@ export function AppShell({
         active={active}
         dimmed={inVenture}
         onNavigate={(item) => router.push(NAV_ROUTES[item])}
-        onNewVenture={() => {}}
+        onNewVenture={open}
         onJump={() => {}}
         unreadCount={unreadCount}
         onMenuSelect={(item) => {

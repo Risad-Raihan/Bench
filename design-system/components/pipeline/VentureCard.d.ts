@@ -26,5 +26,5 @@ export function AddButton(props: AddButtonProps): JSX.Element;
 /** One of the five stage columns. Sits on --bg2 so every card is one surface step above its column — that step, not a background gradient, is how the board separates. */
 export interface StageColumnProps { stage: string; count: string; progress?: number; color?: string; steps?: number; children?: React.ReactNode }
 export function StageColumn(props: StageColumnProps): JSX.Element;
-/** Five-column grid with 1px --grid gaps. */
-export function PipelineBoard(props: { children?: React.ReactNode }): JSX.Element;
+/** Five- or six-column grid with 1px --grid gaps. Default is the five stage columns; pass `columns={6}` when the Application intake column is present (ADR-0002). */
+export function PipelineBoard(props: { children?: React.ReactNode; columns?: number }): JSX.Element;

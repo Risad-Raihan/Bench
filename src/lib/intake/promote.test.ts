@@ -5,6 +5,7 @@ import {
   applications,
   docs,
   gateItems,
+  notifications,
   stageTemplates,
   users,
   ventureStageEvents,
@@ -82,14 +83,15 @@ describe.skipIf(!hasTestDb)("createVentureFromApplication", () => {
       .orderBy(asc(gateItems.sortOrder));
     expect(gates.map((g) => g.label)).toEqual(["Founder call logged"]);
 
-    const [row] = await db
+    const activityRows = await db
       .select()
       .from(activity)
       .where(eq(activity.ventureId, venture.id));
-    expect(row.verb).toBe("created");
-    expect(row.entity).toBe("venture");
-    expect(row.actorId).toBe(actor.id);
-    expect(row.payload).toEqual({
+    const created = activityRows.find((r) => r.verb === "created");
+    expect(created).toBeDefined();
+    expect(created!.entity).toBe("venture");
+    expect(created!.actorId).toBe(actor.id);
+    expect(created!.payload).toEqual({
       source: "application",
       applicationId: application.id,
     });
@@ -109,5 +111,76 @@ describe.skipIf(!hasTestDb)("createVentureFromApplication", () => {
       .where(eq(applications.id, application.id));
     expect(updated.status).toBe("approved");
     expect(updated.ventureId).toBe(venture.id);
+    expect(updated.reviewedBy).toBe(actor.id);
+  });
+
+  test("notifies every other partner on engage, never the actor or a founder", async () => {
+    const { getTestDb, truncateVentureBirthGraph } = await import("@/test/db");
+    const { createVentureFromApplication } = await import("./promote");
+    const db = getTestDb();
+    await truncateVentureBirthGraph(db);
+
+    const inserted = await db
+      .insert(users)
+      .values([
+        {
+          email: "a@aponvlab.io",
+          name: "Actor",
+          initials: "AA",
+          role: "partner",
+        },
+        {
+          email: "b@aponvlab.io",
+          name: "Beta",
+          initials: "BB",
+          role: "partner",
+        },
+        {
+          email: "c@aponvlab.io",
+          name: "Gamma",
+          initials: "CC",
+          role: "partner",
+        },
+        {
+          email: "founder@example.com",
+          name: "Founder",
+          initials: "FF",
+          role: "founder",
+        },
+      ])
+      .returning({ id: users.id, role: users.role, email: users.email });
+    const actor = inserted.find((u) => u.email === "a@aponvlab.io")!;
+    const otherPartners = inserted.filter(
+      (u) => u.role === "partner" && u.id !== actor.id,
+    );
+
+    const [application] = await db
+      .insert(applications)
+      .values({
+        companyName: "ImmiClaw",
+        founderName: "Tunde Adeyemi",
+        founderEmail: "tunde@example.com",
+      })
+      .returning();
+
+    const venture = await createVentureFromApplication(application.id, {
+      actorId: actor.id,
+      executor: db,
+    });
+
+    const [event] = await db
+      .select()
+      .from(activity)
+      .where(eq(activity.verb, "engaged"));
+    expect(event.ventureId).toBe(venture.id);
+    expect(event.actorId).toBe(actor.id);
+
+    const notes = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.activityId, event.id));
+    expect(notes.map((n) => n.userId).sort()).toEqual(
+      otherPartners.map((p) => p.id).sort(),
+    );
   });
 });

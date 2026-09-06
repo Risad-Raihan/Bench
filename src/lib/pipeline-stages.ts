@@ -19,6 +19,7 @@ export function daysSince(date: Date, now: Date = new Date()): number {
   return Math.floor((now.getTime() - date.getTime()) / 86_400_000);
 }
 
-export function isStale(stageEnteredAt: Date, now: Date = new Date()): boolean {
-  return daysSince(stageEnteredAt, now) > STALE_AFTER_DAYS;
+/** True when a venture has sat in its stage, or an application has sat in the inbox, longer than 14 days. */
+export function isStale(since: Date, now: Date = new Date()): boolean {
+  return daysSince(since, now) > STALE_AFTER_DAYS;
 }

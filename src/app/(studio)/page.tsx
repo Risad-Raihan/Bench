@@ -1,4 +1,5 @@
 import { requirePartner } from "@/lib/auth/current-user";
+import { listInboxApplications } from "@/lib/data/applications";
 import { listGateItems, listPipelineTasks, listVentures } from "@/lib/data/ventures";
 import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
@@ -12,7 +13,10 @@ export default async function PipelinePage() {
   const user = await requirePartner();
   const now = new Date();
 
-  const ventureRows = await listVentures(user);
+  const [ventureRows, inbox] = await Promise.all([
+    listVentures(user),
+    listInboxApplications(user),
+  ]);
   const ventureIds = ventureRows.map((v) => v.id);
 
   const [gateRows, taskRows] = await Promise.all([
@@ -31,6 +35,7 @@ export default async function PipelinePage() {
   }
 
   const staleVentures = ventureRows.filter((v) => isStale(v.stageEnteredAt, now));
+  const staleApplications = inbox.filter((a) => isStale(a.createdAt, now));
   const stakes = ventureRows
     .map((v) => v.equityPct)
     .filter((v): v is number => v != null);
@@ -52,7 +57,33 @@ export default async function PipelinePage() {
     (t) => t.dueDate && new Date(t.dueDate) <= weekFromNow && new Date(t.dueDate) >= now,
   );
 
-  const stages: PipelineStageColumn[] = STAGES.map(({ stage, label, color }, index) => {
+  const applicationColumn: PipelineStageColumn = {
+    stage: "application",
+    label: "Application",
+    color: "var(--ash)",
+    count: String(inbox.length).padStart(2, "0"),
+    progress: 0,
+    ventures: inbox.map((a) => {
+      const stale = isStale(a.createdAt, now);
+      return {
+        id: a.id,
+        slug: "",
+        name: a.companyName,
+        // problem is a free-text questionnaire answer (up to 5000 chars); the
+        // card shows a one-line teaser.
+        caption: a.problem ? `${a.problem.slice(0, 120).trimEnd()}${a.problem.length > 120 ? "…" : ""}` : "",
+        color: "var(--ash)",
+        gates: 0,
+        gateTotal: 0,
+        who: "—",
+        founder: a.founderName,
+        flag: stale ? `STALE ${daysSince(a.createdAt, now)}D` : undefined,
+        kind: "application" as const,
+      };
+    }),
+  };
+
+  const stageColumns: PipelineStageColumn[] = STAGES.map(({ stage, label, color }, index) => {
     const stageVentures = ventureRows
       .filter((v) => v.stage === stage)
       .sort((a, b) => a.boardPosition - b.boardPosition)
@@ -82,6 +113,8 @@ export default async function PipelinePage() {
     };
   });
 
+  const stages: PipelineStageColumn[] = [applicationColumn, ...stageColumns];
+
   const stats: PipelineStat[] = [
     { value: ventureRows.length, label: "active ventures" },
     { value: openTasks.length, label: "open tasks" },
@@ -93,7 +126,7 @@ export default async function PipelinePage() {
     <PipelineView
       stages={stages}
       kpis={{
-        needAttention: staleVentures.length,
+        needAttention: staleVentures.length + staleApplications.length,
         avgStakePct,
         avgDaysInStage,
       }}

@@ -5,20 +5,19 @@
  *   2. parses the multipart body (text fields + one "deck" file)
  *   3. uploads the deck to Vercel Blob
  *   4. writes one `applications` row
- *   5. promotes it to a venture in the Meet stage (see lib/intake/promote.ts)
  *
- * The marketing site must NEVER touch Bench's database directly — this is the
- * only door in.
+ * It does not create a venture. Partners Engage from the Application column
+ * (see lib/intake/promote.ts). The marketing site must NEVER touch Bench's
+ * database directly — this is the only door in.
  */
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { put } from "@vercel/blob";
 import { db } from "@/db";
 import { applications } from "@/db/schema";
-import { createVentureFromApplication } from "@/lib/intake/promote";
 
 export const runtime = "nodejs";
-// 15 MB deck upload + several sequential Neon HTTP round-trips in promote.
+// 15 MB deck upload + the applications insert.
 export const maxDuration = 120;
 
 const MAX_FIELD_LEN = 5000;
@@ -171,26 +170,5 @@ export async function POST(req: Request) {
     return json({ ok: false, error: "internal error" }, 500);
   }
 
-  // Promote in its own try/catch: the application row is already safe. If
-  // promote hiccups, the applicant must NOT see an error (they'd retry and
-  // create a duplicate row). The application stays at status "new" and shows
-  // as unpromoted in the inbox, where a partner can create the venture later.
-  try {
-    const venture = await createVentureFromApplication(application.id);
-    return json(
-      {
-        ok: true,
-        applicationId: application.id,
-        ventureId: venture.id,
-        ventureSlug: venture.slug,
-      },
-      200,
-    );
-  } catch (err) {
-    console.error(
-      `[intake] application ${application.id} recorded but promote failed`,
-      err,
-    );
-    return json({ ok: true, applicationId: application.id }, 200);
-  }
+  return json({ ok: true, applicationId: application.id }, 200);
 }

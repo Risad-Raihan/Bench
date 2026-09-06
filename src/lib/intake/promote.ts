@@ -4,6 +4,7 @@
  * createVenture — this wrapper maps fields, attaches the intake deck, and
  * links the application.
  */
+import { recordActivity } from "@/lib/data/activity";
 import {
   findApplicationById,
   linkApprovedApplication,
@@ -22,6 +23,9 @@ export async function createVentureFromApplication(
   const application = await findApplicationById(applicationId, executor);
   if (!application) {
     throw new Error(`Application ${applicationId} not found`);
+  }
+  if (application.status === "passed") {
+    throw new Error(`Application ${applicationId} has been passed`);
   }
   if (application.ventureId) {
     const existing = await getVentureById(application.ventureId, executor);
@@ -59,6 +63,22 @@ export async function createVentureFromApplication(
     );
   }
 
-  await linkApprovedApplication(application.id, venture.id, executor);
+  await linkApprovedApplication(application.id, venture.id, {
+    reviewedBy: actorId,
+    executor,
+  });
+
+  await recordActivity(
+    {
+      verb: "engaged",
+      entity: "venture",
+      entityId: venture.id,
+      ventureId: venture.id,
+      actorId,
+      payload: { applicationId: application.id },
+    },
+    executor,
+  );
+
   return venture;
 }

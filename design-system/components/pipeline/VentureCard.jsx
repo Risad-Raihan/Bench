@@ -44,6 +44,6 @@ export function StageColumn({stage,count,progress=0,color="var(--copper)",steps=
     <div style={{padding:10}}>{children}</div>
   </div>);
 }
-export function PipelineBoard({children}){
-  return <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:1,background:"var(--line)"}}>{children}</div>;
+export function PipelineBoard({children, columns=5}){
+  return <div style={{display:"grid",gridTemplateColumns:`repeat(${columns},1fr)`,gap:1,background:"var(--line)"}}>{children}</div>;
 }

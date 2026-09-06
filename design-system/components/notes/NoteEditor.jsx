@@ -3,14 +3,17 @@ export function NoteSidebar({groups=[],active,onSelect}){
   return (<div style={{background:"var(--bg2)",borderRight:"1px solid var(--line)",padding:"14px 0",minHeight:520}}>
     {groups.map(g=>(<div key={g.label}>
       <div style={{fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".18em",textTransform:"uppercase",color:"var(--faint)",padding:"12px 15px 7px"}}>{g.label}</div>
-      {g.items.map(it=><SidebarLink key={it.label} {...it} on={it.label===active} onClick={()=>onSelect&&onSelect(it.label)}/>)}
+      {g.items.map(it=>{
+        const id=it.id??it.label;
+        return <SidebarLink key={id} {...it} on={id===active} onClick={()=>onSelect&&onSelect(id)}/>;
+      })}
     </div>))}
   </div>);
 }
-export function SidebarLink({label,color="var(--ash)",on=false,onClick}){
+export function SidebarLink({label,color="var(--ash)",on=false,onClick,depth=0}){
   const [h,setH]=React.useState(false);
   return (<a onClick={onClick} onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
-    style={{display:"flex",alignItems:"center",gap:8,padding:"6px 15px",fontSize:12.5,textDecoration:"none",cursor:"pointer",
+    style={{display:"flex",alignItems:"center",gap:8,padding:"6px 15px",paddingLeft:15+depth*12,fontSize:12.5,textDecoration:"none",cursor:"pointer",
       borderLeft:"2px solid "+(on?"var(--copper)":"transparent"),color:on||h?"var(--ink)":"var(--dim)",background:on?"var(--active-row)":h?"var(--hover-row)":undefined,
       transition:"color var(--dur-fast),background var(--dur-fast)"}}>
     <s style={{width:5,height:5,borderRadius:1,background:color,textDecoration:"none"}}/>{label}</a>);
@@ -40,10 +43,11 @@ export function TaskBlock({label,pill,pillColor="var(--teal)",done=false,onToggl
     {pill&&<span style={{marginLeft:"auto",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".12em",textTransform:"uppercase",padding:"3px 8px",borderRadius:2,background:tint,color:ink}}>{pill}</span>}
   </div>);
 }
-export function SlashMenu({items=[],heading="Blocks"}){
-  return (<div style={{marginTop:10,marginLeft:26,width:290,background:"var(--panel)",border:"1px solid var(--line2)",borderRadius:3,padding:5,boxShadow:"var(--shadow-menu)"}}>
+export function SlashMenu({items=[],heading="Blocks",onSelect,flush=false}){
+  return (<div style={{marginTop:flush?0:10,marginLeft:flush?0:26,width:"var(--w-slash)",background:"var(--panel)",border:"1px solid var(--line2)",borderRadius:"var(--radius-3)",padding:"var(--sp-5)",boxShadow:"var(--shadow-menu)"}}>
     <em style={{fontStyle:"normal",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".16em",textTransform:"uppercase",color:"var(--faint)",display:"block",padding:"6px 9px 5px"}}>{heading}</em>
-    {items.map(it=>(<div key={it.label} style={{display:"flex",alignItems:"center",gap:10,padding:"7px 9px",fontSize:13,borderRadius:2,
+    {items.map(it=>(<div key={it.label} onClick={()=>{it.onClick?.();onSelect?.(it);}}
+      style={{display:"flex",alignItems:"center",gap:10,padding:"7px 9px",fontSize:13,borderRadius:2,cursor:"pointer",
       background:it.on?"#221814":undefined,color:it.on?"var(--ink)":"var(--dim)"}}>
       <s style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--copper)",textDecoration:"none",width:14}}>{it.glyph}</s>{it.label}
       {it.hint&&<b style={{marginLeft:"auto",fontFamily:"var(--font-mono)",fontSize:11,color:"#463b36",fontWeight:400}}>{it.hint}</b>}

@@ -36,6 +36,13 @@
       "when": 1788675751731,
       "tag": "0004_aspiring_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788678300748,
+      "tag": "0005_red_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }

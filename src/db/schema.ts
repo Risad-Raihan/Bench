@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   pgEnum,
@@ -312,9 +313,10 @@ export const notes = pgTable(
   },
   (t) => ({
     ventureIdx: index("notes_venture_idx").on(t.ventureId, t.updatedAt),
-    // Add the GIN index by hand in a migration:
-    // CREATE INDEX notes_fts_idx ON notes
-    //   USING GIN (to_tsvector('english', title || ' ' || plain_text));
+    ftsIdx: index("notes_fts_idx").using(
+      "gin",
+      sql`to_tsvector('english', ${t.title} || ' ' || ${t.plainText})`,
+    ),
   })
 );
 

@@ -16,3 +16,12 @@ export function formatDayMonth(date: Date): string {
 export function formatDueDate(date: Date): string {
   return formatDayMonth(date).toUpperCase();
 }
+
+/** Mono uppercase relative time for the note byline ("JUST NOW", "2H AGO"). */
+export function formatEditedAgo(date: Date, now: Date): string {
+  const ms = Math.max(0, now.getTime() - date.getTime());
+  if (ms < 60_000) return "JUST NOW";
+  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}M AGO`;
+  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}H AGO`;
+  return formatDueDate(date);
+}

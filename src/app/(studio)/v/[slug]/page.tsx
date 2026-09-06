@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { requirePartner } from "@/lib/auth/current-user";
 import { countDecisions } from "@/lib/data/decisions";
 import { countDocs } from "@/lib/data/docs";
-import { countNotes } from "@/lib/data/notes";
+import { listNotes } from "@/lib/data/notes";
 import {
   countEvents,
   getVenture,
@@ -37,14 +37,14 @@ export default async function VenturePage({
   const color = ventureColor(venture.color);
   const currentStageIndex = STAGES.findIndex((s) => s.stage === venture.stage);
 
-  const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, notesCount, eventsCount, decisionsCount, partners] =
+  const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, noteRows, eventsCount, decisionsCount, partners] =
     await Promise.all([
       listSwitchTargets(user, venture.id),
       listGateItems(user, [venture.id]),
       listStageEvents(user, venture.id),
       listVentureTasks(user, venture.id),
       countDocs(user, venture.id),
-      countNotes(user, venture.id),
+      listNotes(user, venture.id),
       countEvents(user, venture.id),
       countDecisions(user, venture.id),
       listAssignablePartners(user),
@@ -124,7 +124,7 @@ export default async function VenturePage({
   const tabs = [
     { label: "Overview" },
     { label: "Docs", count: docsCount },
-    { label: "Notes", count: notesCount },
+    { label: "Notes", count: noteRows.length },
     { label: "Tasks", count: taskRows.length },
     { label: "Calendar", count: eventsCount },
     { label: "Decisions", count: decisionsCount },
@@ -153,6 +153,7 @@ export default async function VenturePage({
       lanes={lanes}
       ventureId={venture.id}
       partners={partners}
+      notes={noteRows.map((n) => ({ id: n.id, title: n.title }))}
     />
   );
 }

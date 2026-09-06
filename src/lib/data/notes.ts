@@ -1,15 +1,23 @@
 /**
- * Founder-reachable note reads. Partner path returns studio + shared.
- * Founder visibility filter (`shared` only) lands in S14.
+ * Founder-reachable note reads and partner writes. Pages never touch `db`
+ * (ADR-0006). Founder visibility filter (`shared` only) lands in S14.
  */
 import { and, count, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { notes, type visibility } from "@/db/schema";
+import { notes, noteVersions, users, ventures, type visibility } from "@/db/schema";
 import {
   isInternalUser,
   type CurrentUser,
   type InternalUser,
 } from "@/lib/auth/resolve";
+import {
+  EMPTY_DOC,
+  asEditorDoc,
+  flattenToPlainText,
+  shouldSnapshot,
+} from "@/lib/notes/save";
+
+export type Executor = typeof db;
 
 type Visibility = (typeof visibility.enumValues)[number];
 
@@ -24,6 +32,33 @@ export type PartnerNote = {
 };
 
 export type FounderNote = PartnerNote;
+
+export type PartnerNoteIndexItem = PartnerNote & {
+  ventureName: string | null;
+  ventureColor: string | null;
+};
+
+export type PartnerNoteDetail = PartnerNote & {
+  content: unknown;
+  createdAt: Date;
+  createdBy: string | null;
+  lastEditedBy: string | null;
+  lastEditedByName: string | null;
+  lastEditedByInitials: string | null;
+  ventureName: string | null;
+  ventureColor: string | null;
+  versionCount: number;
+};
+
+const listColumns = {
+  id: notes.id,
+  ventureId: notes.ventureId,
+  title: notes.title,
+  visibility: notes.visibility,
+  isFavorite: notes.isFavorite,
+  parentNoteId: notes.parentNoteId,
+  updatedAt: notes.updatedAt,
+};
 
 export async function listNotes(
   user: InternalUser,
@@ -43,51 +78,74 @@ export async function listNotes(
     return [];
   }
   return db
-    .select({
-      id: notes.id,
-      ventureId: notes.ventureId,
-      title: notes.title,
-      visibility: notes.visibility,
-      isFavorite: notes.isFavorite,
-      parentNoteId: notes.parentNoteId,
-      updatedAt: notes.updatedAt,
-    })
+    .select(listColumns)
     .from(notes)
     .where(and(eq(notes.ventureId, ventureId), isNull(notes.archivedAt)))
+    .orderBy(desc(notes.updatedAt));
+}
+
+export async function listAllNotes(
+  user: CurrentUser,
+  executor: Executor = db,
+): Promise<PartnerNoteIndexItem[]> {
+  if (!isInternalUser(user)) return [];
+  return executor
+    .select({
+      ...listColumns,
+      ventureName: ventures.name,
+      ventureColor: ventures.color,
+    })
+    .from(notes)
+    .leftJoin(ventures, eq(notes.ventureId, ventures.id))
+    .where(isNull(notes.archivedAt))
     .orderBy(desc(notes.updatedAt));
 }
 
 export async function getNoteById(
   user: InternalUser,
   noteId: string,
-): Promise<PartnerNote | null>;
+  executor?: Executor,
+): Promise<PartnerNoteDetail | null>;
 export async function getNoteById(
   user: CurrentUser,
   noteId: string,
-): Promise<PartnerNote | FounderNote | null>;
+  executor?: Executor,
+): Promise<PartnerNoteDetail | FounderNote | null>;
 export async function getNoteById(
   user: CurrentUser,
   noteId: string,
-): Promise<PartnerNote | FounderNote | null> {
+  executor: Executor = db,
+): Promise<PartnerNoteDetail | FounderNote | null> {
   if (!isInternalUser(user)) {
     // S14: studio or out-of-scope id → 404.
     void noteId;
     return null;
   }
-  const [row] = await db
+  const [row] = await executor
     .select({
-      id: notes.id,
-      ventureId: notes.ventureId,
-      title: notes.title,
-      visibility: notes.visibility,
-      isFavorite: notes.isFavorite,
-      parentNoteId: notes.parentNoteId,
-      updatedAt: notes.updatedAt,
+      ...listColumns,
+      content: notes.content,
+      createdAt: notes.createdAt,
+      createdBy: notes.createdBy,
+      lastEditedBy: notes.lastEditedBy,
+      lastEditedByName: users.name,
+      lastEditedByInitials: users.initials,
+      ventureName: ventures.name,
+      ventureColor: ventures.color,
     })
     .from(notes)
+    .leftJoin(users, eq(notes.lastEditedBy, users.id))
+    .leftJoin(ventures, eq(notes.ventureId, ventures.id))
     .where(and(eq(notes.id, noteId), isNull(notes.archivedAt)))
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+
+  const [versions] = await executor
+    .select({ n: count() })
+    .from(noteVersions)
+    .where(eq(noteVersions.noteId, noteId));
+
+  return { ...row, versionCount: versions?.n ?? 0 };
 }
 
 export async function countNotes(
@@ -100,4 +158,139 @@ export async function countNotes(
     .from(notes)
     .where(and(eq(notes.ventureId, ventureId), isNull(notes.archivedAt)));
   return row?.n ?? 0;
+}
+
+export type CreateNoteInput = {
+  title?: string;
+  ventureId?: string | null;
+  parentNoteId?: string | null;
+};
+
+export async function createNote(
+  user: CurrentUser,
+  input: CreateNoteInput = {},
+  executor: Executor = db,
+): Promise<PartnerNoteDetail> {
+  if (!isInternalUser(user)) {
+    throw new Error("forbidden");
+  }
+  const title = input.title?.trim() || "Untitled";
+  const [row] = await executor
+    .insert(notes)
+    .values({
+      title,
+      ventureId: input.ventureId ?? null,
+      parentNoteId: input.parentNoteId ?? null,
+      content: EMPTY_DOC,
+      plainText: "",
+      createdBy: user.id,
+      lastEditedBy: user.id,
+    })
+    .returning({ id: notes.id });
+  if (!row) throw new Error("note insert returned no row");
+
+  const created = await getNoteById(user, row.id, executor);
+  if (!created) throw new Error("note insert could not be re-read");
+  return created;
+}
+
+export type SaveNoteInput = {
+  noteId: string;
+  content: unknown;
+  title?: string;
+  reason: "blur" | "interval" | "flush";
+};
+
+export type SaveNoteResult = {
+  id: string;
+  updatedAt: Date;
+  lastEditedByName: string | null;
+  snapshotted: boolean;
+};
+
+export async function saveNote(
+  user: CurrentUser,
+  input: SaveNoteInput,
+  executor: Executor = db,
+): Promise<SaveNoteResult | null> {
+  if (!isInternalUser(user)) return null;
+
+  const [existing] = await executor
+    .select({
+      id: notes.id,
+      content: notes.content,
+      title: notes.title,
+      createdAt: notes.createdAt,
+      updatedAt: notes.updatedAt,
+    })
+    .from(notes)
+    .where(and(eq(notes.id, input.noteId), isNull(notes.archivedAt)))
+    .limit(1);
+  if (!existing) return null;
+
+  const content = asEditorDoc(input.content);
+  const title = input.title?.trim() || existing.title;
+  const hasChanges =
+    JSON.stringify(existing.content) !== JSON.stringify(content) ||
+    title !== existing.title;
+  if (!hasChanges) {
+    return {
+      id: existing.id,
+      updatedAt: existing.updatedAt,
+      lastEditedByName: null,
+      snapshotted: false,
+    };
+  }
+
+  const now = new Date();
+  const plainText = flattenToPlainText(content);
+  const [updated] = await executor
+    .update(notes)
+    .set({
+      content,
+      plainText,
+      title,
+      lastEditedBy: user.id,
+      updatedAt: now,
+    })
+    .where(eq(notes.id, input.noteId))
+    .returning({
+      id: notes.id,
+      updatedAt: notes.updatedAt,
+    });
+  if (!updated) return null;
+
+  const [latest] = await executor
+    .select({ createdAt: noteVersions.createdAt })
+    .from(noteVersions)
+    .where(eq(noteVersions.noteId, input.noteId))
+    .orderBy(desc(noteVersions.createdAt))
+    .limit(1);
+
+  const snapshotted = shouldSnapshot({
+    reason: input.reason === "interval" ? "interval" : "blur",
+    hasChanges: true,
+    since: latest?.createdAt ?? existing.createdAt,
+    now,
+  });
+  if (snapshotted) {
+    await executor.insert(noteVersions).values({
+      noteId: input.noteId,
+      content,
+      editedBy: user.id,
+    });
+  }
+
+  const [editor] = await executor
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+
+  return {
+    id: updated.id,
+    updatedAt: updated.updatedAt,
+    lastEditedByName: editor?.name ?? null,
+    snapshotted,
+  };
 }

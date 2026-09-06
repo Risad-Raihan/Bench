@@ -9,11 +9,13 @@ import {
   VentureTabs,
 } from "../../design-system/components/venture/VentureHeader.jsx";
 import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
+import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
 import { PageContainer } from "@/components/PageContainer";
 import {
   TasksBoard,
   type AssignablePartner,
 } from "@/components/TasksBoard";
+import { createNoteAction } from "@/lib/notes/actions";
 import type { Priority } from "@/lib/data/tasks";
 import type { Lane, TaskStatus } from "@/lib/lanes";
 
@@ -69,7 +71,7 @@ const EMPTY_STATE_COPY: Record<string, { label: string; hint: string }> = {
   },
   Notes: {
     label: "No notes yet",
-    hint: "Notes mentioning this venture will appear here.",
+    hint: "Notes owned by this venture will appear here.",
   },
   Calendar: {
     label: "No events yet",
@@ -95,6 +97,7 @@ export function VentureView({
   lanes,
   ventureId,
   partners,
+  notes,
 }: {
   slug: string;
   name: string;
@@ -109,6 +112,7 @@ export function VentureView({
   lanes: VentureLaneData[];
   ventureId: string;
   partners: AssignablePartner[];
+  notes: { id: string; title: string }[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("Overview");
@@ -210,6 +214,13 @@ export function VentureView({
           lanes={lanes}
           partners={partners}
         />
+      ) : tab === "Notes" ? (
+        <VentureNotesList
+          slug={slug}
+          color={color}
+          ventureId={ventureId}
+          notes={notes}
+        />
       ) : (
         <PageContainer>
           <EmptyState hint={emptyCopy.hint}>{emptyCopy.label}</EmptyState>
@@ -258,6 +269,96 @@ function SwitcherRow({
         }}
       />
       {venture.name}
+    </div>
+  );
+}
+
+function VentureNotesList({
+  slug,
+  color,
+  ventureId,
+  notes,
+}: {
+  slug: string;
+  color: string;
+  ventureId: string;
+  notes: { id: string; title: string }[];
+}) {
+  const router = useRouter();
+
+  async function onCreate() {
+    const result = await createNoteAction({ ventureId, slug });
+    if (result.ok) router.push(`/notes?n=${result.id}`);
+  }
+
+  if (notes.length === 0) {
+    return (
+      <PageContainer>
+        <EmptyState
+          hint="Notes owned by this venture will appear here."
+          action="+ New note"
+          onAction={() => void onCreate()}
+        >
+          No notes yet
+        </EmptyState>
+      </PageContainer>
+    );
+  }
+
+  return (
+    <PageContainer>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 11 }}>
+        <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
+      </div>
+      {notes.map((note) => (
+        <VentureNoteRow
+          key={note.id}
+          title={note.title}
+          color={color}
+          onOpen={() => router.push(`/notes?n=${note.id}`)}
+        />
+      ))}
+    </PageContainer>
+  );
+}
+
+function VentureNoteRow({
+  title,
+  color,
+  onOpen,
+}: {
+  title: string;
+  color: string;
+  onOpen: () => void;
+}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onClick={onOpen}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "11px 22px",
+        borderBottom: "1px solid var(--divider)",
+        cursor: "pointer",
+        fontSize: 13.5,
+        background: hov ? "var(--hover-row)" : undefined,
+        transition: "background var(--dur-instant)",
+      }}
+    >
+      <span
+        style={{
+          width: 5,
+          height: 5,
+          borderRadius: 1,
+          background: color,
+          flex: "none",
+        }}
+      />
+      {title || "Untitled"}
     </div>
   );
 }

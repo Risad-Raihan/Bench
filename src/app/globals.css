@@ -1,1 +1,49 @@
 @import "../../design-system/styles.css";
+
+.note-prose {
+  outline: none;
+  min-height: 240px;
+  color: var(--body-ink);
+  font-size: var(--fs-14-5);
+  line-height: var(--lh-note);
+}
+.note-prose p {
+  margin: 0;
+  padding: var(--sp-5) 0;
+}
+.note-prose h1,
+.note-prose h2,
+.note-prose h3 {
+  font-size: var(--fs-18);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-sub);
+  color: var(--ink);
+  margin: var(--sp-14) 0 0;
+  line-height: var(--lh-tight);
+}
+.note-prose blockquote {
+  margin: var(--sp-8) 0 0;
+  padding-left: var(--sp-14);
+  border-left: var(--accent-edge-sm) solid var(--magenta);
+  color: var(--quote-ink);
+  font-size: var(--fs-14-5);
+  line-height: var(--lh-lede);
+}
+.note-prose > * {
+  padding-left: var(--sp-26);
+  border-radius: var(--radius-2);
+  transition: background var(--dur-instant);
+}
+.note-prose > *:hover {
+  background: var(--hover-row);
+}
+.note-prose .ProseMirror-focused {
+  outline: none;
+}
+.note-prose p.is-empty:first-child::before {
+  content: "Type / for blocks";
+  color: var(--ink-ghost);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}

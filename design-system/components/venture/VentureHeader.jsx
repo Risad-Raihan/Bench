@@ -23,9 +23,9 @@ export function VentureHeader({name,sub,tags=[],stage,stageMeta,color}){
     </div>
   </div>);
 }
-export function GateRail({gates=[]}){
+export function GateRail({gates=[],onSelect}){
   return (<div style={{display:"flex",gap:1,background:"var(--line)",borderBottom:"1px solid var(--line)"}}>
-    {gates.map(g=>(<div key={g.stage} style={{flex:1,background:g.state==="now"?"var(--active-row)":"var(--bg2)",padding:"11px 13px",position:"relative"}}>
+    {gates.map(g=>(<div key={g.stage} onClick={()=>onSelect&&g.state!=="now"&&onSelect(g.stage)} style={{flex:1,background:g.state==="now"?"var(--active-row)":"var(--bg2)",padding:"11px 13px",position:"relative",cursor:onSelect&&g.state!=="now"?"pointer":undefined}}>
       <i style={{fontStyle:"normal",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".16em",textTransform:"uppercase",display:"block",whiteSpace:"nowrap",
         color:g.state==="done"?"var(--teal)":g.state==="now"?"var(--copper)":"var(--faint)"}}>{g.stage}</i>
       <b style={{fontSize:12.5,fontWeight:500,display:"block",marginTop:5,color:g.state?"var(--ink)":"var(--dim)"}}>{g.label}</b>

@@ -61,10 +61,12 @@ export type SwitchTarget = {
 };
 
 export type GateItemRow = {
+  id: string;
   ventureId: string;
   stage: Stage;
   label: string;
   doneAt: Date | null;
+  doneByInitials: string | null;
   sortOrder: number;
 };
 
@@ -181,13 +183,16 @@ export async function listGateItems(
   if (!isInternalUser(user) || ventureIds.length === 0) return [];
   return db
     .select({
+      id: gateItems.id,
       ventureId: gateItems.ventureId,
       stage: gateItems.stage,
       label: gateItems.label,
       doneAt: gateItems.doneAt,
+      doneByInitials: users.initials,
       sortOrder: gateItems.sortOrder,
     })
     .from(gateItems)
+    .leftJoin(users, eq(gateItems.doneBy, users.id))
     .where(inArray(gateItems.ventureId, ventureIds))
     .orderBy(asc(gateItems.sortOrder));
 }
@@ -383,5 +388,97 @@ export async function getVentureById(
     .from(ventures)
     .where(eq(ventures.id, ventureId))
     .limit(1);
+  return row ?? null;
+}
+
+export async function countOpenGates(
+  ventureId: string,
+  stage: StageValue,
+  executor?: Executor,
+): Promise<number> {
+  const run = executor ?? db;
+  const [row] = await run
+    .select({ n: count() })
+    .from(gateItems)
+    .where(
+      and(
+        eq(gateItems.ventureId, ventureId),
+        eq(gateItems.stage, stage),
+        isNull(gateItems.doneAt),
+      ),
+    );
+  return row?.n ?? 0;
+}
+
+export async function hasGateItemsForStage(
+  ventureId: string,
+  stage: StageValue,
+  executor?: Executor,
+): Promise<boolean> {
+  const run = executor ?? db;
+  const [row] = await run
+    .select({ id: gateItems.id })
+    .from(gateItems)
+    .where(and(eq(gateItems.ventureId, ventureId), eq(gateItems.stage, stage)))
+    .limit(1);
+  return row != null;
+}
+
+export async function insertStageEvent(
+  values: {
+    ventureId: string;
+    fromStage: StageValue | null;
+    toStage: StageValue;
+    actorId: string | null;
+    reason?: string | null;
+  },
+  executor?: Executor,
+) {
+  const run = executor ?? db;
+  await run.insert(ventureStageEvents).values({
+    ventureId: values.ventureId,
+    fromStage: values.fromStage,
+    toStage: values.toStage,
+    actorId: values.actorId,
+    reason: values.reason ?? null,
+  });
+}
+
+export async function updateVentureStage(
+  ventureId: string,
+  values: { stage: StageValue; stageEnteredAt: Date },
+  executor?: Executor,
+) {
+  const run = executor ?? db;
+  await run
+    .update(ventures)
+    .set({
+      stage: values.stage,
+      stageEnteredAt: values.stageEnteredAt,
+    })
+    .where(eq(ventures.id, ventureId));
+}
+
+export async function getGateItem(id: string, executor?: Executor) {
+  const run = executor ?? db;
+  const [row] = await run
+    .select()
+    .from(gateItems)
+    .where(eq(gateItems.id, id))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function setGateCleared(
+  id: string,
+  values: { doneAt: Date | null; doneBy: string | null },
+  executor?: Executor,
+) {
+  const run = executor ?? db;
+  const [row] = await run
+    .update(gateItems)
+    .set({ doneAt: values.doneAt, doneBy: values.doneBy })
+    .where(eq(gateItems.id, id))
+    .returning();
   return row ?? null;
 }

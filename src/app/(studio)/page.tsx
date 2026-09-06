@@ -88,7 +88,7 @@ export default async function PipelinePage() {
       .filter((v) => v.stage === stage)
       .sort((a, b) => a.boardPosition - b.boardPosition)
       .map((v) => {
-        const gates = gatesByVenture.get(v.id) ?? { total: 6, done: 0 };
+        const gates = gatesByVenture.get(v.id) ?? { total: 0, done: 0 };
         const stale = isStale(v.stageEnteredAt, now);
         return {
           id: v.id,
@@ -97,7 +97,9 @@ export default async function PipelinePage() {
           caption: v.oneLiner ?? "",
           color: ventureColor(v.color),
           gates: gates.done,
-          gateTotal: gates.total,
+          gateTotal: gates.total || 6,
+          openGates: gates.total - gates.done,
+          stage,
           who: v.ownerInitials ?? "—",
           founder: v.founderName ?? "",
           flag: stale ? `STALE ${daysSince(v.stageEnteredAt, now)}D` : undefined,

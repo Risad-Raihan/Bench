@@ -13,6 +13,20 @@ export const STAGES: { stage: Stage; label: string; color: string }[] = [
   { stage: "grow", label: "Grow", color: "var(--teal)" },
 ];
 
+const STAGE_KEYS = new Set<string>(STAGES.map((s) => s.stage));
+
+export function isStage(value: string): value is Stage {
+  return STAGE_KEYS.has(value);
+}
+
+export function stageIndex(stage: Stage): number {
+  return STAGES.findIndex((s) => s.stage === stage);
+}
+
+export function stageLabel(stage: Stage): string {
+  return STAGES.find((s) => s.stage === stage)?.label ?? stage;
+}
+
 export const STALE_AFTER_DAYS = 14;
 
 export function daysSince(date: Date, now: Date = new Date()): number {

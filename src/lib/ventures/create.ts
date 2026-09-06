@@ -6,13 +6,12 @@
 import { recordActivity } from "@/lib/data/activity";
 import {
   insertBirthStageEvent,
-  insertGateItemsForVenture,
   insertVenture,
   isSlugTaken,
-  listActiveGateTemplates,
   listUsedVentureColors,
   type Executor,
 } from "@/lib/data/ventures";
+import { seedGatesForStage } from "@/lib/stages/move";
 import {
   nextAvailableVentureColor,
   VENTURE_COLOR_PALETTE,
@@ -122,15 +121,7 @@ export async function createVenture(
     executor,
   );
 
-  const templates = await listActiveGateTemplates("meet", executor);
-  await insertGateItemsForVenture(
-    {
-      ventureId: venture.id,
-      stage: "meet",
-      templates,
-    },
-    executor,
-  );
+  await seedGatesForStage(venture.id, "meet", executor);
 
   await recordActivity(
     {

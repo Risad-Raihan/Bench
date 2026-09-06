@@ -150,7 +150,15 @@ export default async function VenturePage({
       ]}
       stageLabel={STAGES[currentStageIndex]?.label ?? venture.stage}
       stageMeta={stageMeta}
+      currentStage={venture.stage}
+      openGateCount={currentStageGates.filter((g) => !g.doneAt).length}
       gates={gates}
+      checklist={currentStageGates.map((g) => ({
+        id: g.id,
+        label: g.label,
+        done: g.doneAt != null,
+        by: g.doneAt ? (g.doneByInitials ?? "") : "",
+      }))}
       tabs={tabs}
       switchTargets={switchTargets.map((v) => ({
         slug: v.slug,

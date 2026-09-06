@@ -1,22 +1,28 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { BackStrip } from "../../design-system/components/chrome/BackStrip.jsx";
 import {
   GateRail,
   VentureHeader,
   VentureTabs,
 } from "../../design-system/components/venture/VentureHeader.jsx";
-import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
+import { EmptyState, Panel } from "../../design-system/components/layout/Panel.jsx";
 import { ActionButton, DecisionRow } from "../../design-system/components/decisions/DecisionRow.jsx";
+import { ChecklistRow } from "../../design-system/components/data/FactRow.jsx";
 import { PageContainer } from "@/components/PageContainer";
+import { MoveStageModal } from "@/components/MoveStageModal";
 import {
   TasksBoard,
   type AssignablePartner,
 } from "@/components/TasksBoard";
 import { DocsView, type DocsTabFile } from "@/components/DocsView";
 import { createNoteAction } from "@/lib/notes/actions";
+import { toggleGateAction } from "@/lib/gates/actions";
+import { moveStageAction } from "@/lib/stages/actions";
+import { reasonRequired } from "@/lib/stages/reason";
+import { STAGES, stageLabel as labelForStage, type Stage } from "@/lib/pipeline-stages";
 import type { Priority } from "@/lib/data/tasks";
 import type { Lane, TaskStatus } from "@/lib/lanes";
 
@@ -56,6 +62,13 @@ export interface VentureGate {
   state?: "done" | "now";
 }
 
+export interface VentureGateItem {
+  id: string;
+  label: string;
+  done: boolean;
+  by: string;
+}
+
 export interface VentureTabData {
   label: string;
   count?: number;
@@ -92,7 +105,10 @@ export function VentureView({
   tags,
   stageLabel,
   stageMeta,
+  currentStage,
+  openGateCount,
   gates,
+  checklist,
   tabs,
   switchTargets,
   lanes,
@@ -110,7 +126,10 @@ export function VentureView({
   tags: { label: string; hot?: boolean }[];
   stageLabel: string;
   stageMeta: string;
+  currentStage: Stage;
+  openGateCount: number;
   gates: VentureGate[];
+  checklist: VentureGateItem[];
   tabs: VentureTabData[];
   switchTargets: VentureSwitchTarget[];
   lanes: VentureLaneData[];
@@ -133,6 +152,9 @@ export function VentureView({
   const [tab, setTab] = useState("Overview");
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
+  const [pendingMove, setPendingMove] = useState<Stage | null>(null);
+  const [moveError, setMoveError] = useState<string | null>(null);
+  const [busy, startTransition] = useTransition();
 
   useEffect(() => {
     if (!switcherOpen) return;
@@ -153,6 +175,35 @@ export function VentureView({
   }, [switcherOpen]);
 
   const emptyCopy = EMPTY_STATE_COPY[tab];
+
+  const runMove = (toStage: Stage, reason: string | null) => {
+    if (busy) return;
+    setMoveError(null);
+    startTransition(async () => {
+      const result = await moveStageAction({
+        ventureId,
+        slug,
+        toStage,
+        reason,
+      });
+      if (!result.ok) {
+        setMoveError(result.error);
+        return;
+      }
+      setPendingMove(null);
+      router.refresh();
+    });
+  };
+
+  const requestMove = (toStage: Stage) => {
+    if (toStage === currentStage) return;
+    if (reasonRequired(currentStage, toStage, openGateCount)) {
+      setMoveError(null);
+      setPendingMove(toStage);
+      return;
+    }
+    runMove(toStage, null);
+  };
 
   return (
     <>
@@ -214,7 +265,13 @@ export function VentureView({
         stage={stageLabel}
         stageMeta={stageMeta}
       />
-      <GateRail gates={gates} />
+      <GateRail
+        gates={gates}
+        onSelect={(label: string) => {
+          const target = STAGES.find((s) => s.label === label);
+          if (target) requestMove(target.stage);
+        }}
+      />
       <VentureTabs
         tabs={tabs}
         active={tab}
@@ -244,12 +301,105 @@ export function VentureView({
           decisions={decisions ?? []}
           onOpenSource={(noteId) => router.push(`/notes?n=${noteId}`)}
         />
+      ) : tab === "Overview" && checklist.length > 0 ? (
+        <OverviewGates
+          slug={slug}
+          stageLabel={stageLabel}
+          checklist={checklist}
+        />
       ) : (
         <PageContainer>
           <EmptyState hint={emptyCopy.hint}>{emptyCopy.label}</EmptyState>
         </PageContainer>
       )}
+      {moveError && !pendingMove ? (
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            letterSpacing: ".06em",
+            color: "var(--amber)",
+            padding: "var(--sp-8) var(--sp-22)",
+          }}
+        >
+          {moveError}
+        </div>
+      ) : null}
+      {pendingMove ? (
+        <MoveStageModal
+          name={name}
+          toLabel={labelForStage(pendingMove)}
+          pending={busy}
+          error={moveError}
+          onConfirm={(reason) => runMove(pendingMove, reason)}
+          onClose={() => {
+            setPendingMove(null);
+            setMoveError(null);
+          }}
+        />
+      ) : null}
     </>
+  );
+}
+
+function OverviewGates({
+  slug,
+  stageLabel,
+  checklist,
+}: {
+  slug: string;
+  stageLabel: string;
+  checklist: VentureGateItem[];
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const done = checklist.filter((g) => g.done).length;
+
+  return (
+    <div style={{ padding: "var(--sp-14) var(--sp-22) var(--sp-22)" }}>
+      <Panel
+        label={`${stageLabel} gates`}
+        right={`${done}/${checklist.length}`}
+      >
+        {checklist.map((g) => (
+          <ChecklistRow
+            key={g.id}
+            label={g.label}
+            by={g.by}
+            done={g.done}
+            onToggle={() => {
+              if (pending) return;
+              setError(null);
+              startTransition(async () => {
+                const result = await toggleGateAction({
+                  gateItemId: g.id,
+                  slug,
+                });
+                if (!result.ok) {
+                  setError(result.error);
+                  return;
+                }
+                router.refresh();
+              });
+            }}
+          />
+        ))}
+      </Panel>
+      {error ? (
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            letterSpacing: ".06em",
+            color: "var(--amber)",
+            marginTop: "var(--sp-8)",
+          }}
+        >
+          {error}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

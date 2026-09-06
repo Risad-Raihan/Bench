@@ -15,7 +15,7 @@ export function VentureHeader(props: VentureHeaderProps): JSX.Element;
 export interface TagProps { children: React.ReactNode; hot?: boolean }
 export function Tag(props: TagProps): JSX.Element;
 /** Five stage cells with state: "done" (teal, full rule), "now" (copper, 66% rule, raised surface), or undefined (locked). */
-export interface GateRailProps { gates: { stage: string; label: string; state?: "done" | "now" }[] }
+export interface GateRailProps { gates: { stage: string; label: string; state?: "done" | "now" }[]; onSelect?: (stage: string) => void }
 export function GateRail(props: GateRailProps): JSX.Element;
 /** Raised mono tabs carrying the venture accent on the active tab's top edge. */
 export interface VentureTabsProps { tabs: { label: string; count?: number }[]; active: string; onSelect?: (label: string) => void; scope?: string; accent?: string }

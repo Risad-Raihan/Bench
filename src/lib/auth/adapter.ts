@@ -4,7 +4,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { accounts, users, verificationTokens } from "@/db/schema";
 import { initialsFromName } from "@/lib/intake/initials";
-import { normalizeEmail } from "./partners";
+import { isAllowlistedPartner, normalizeEmail } from "./partners";
 
 function toAdapterUser(row: typeof users.$inferSelect): AdapterUser {
   return {
@@ -31,6 +31,11 @@ export function createAuthAdapter(): Adapter {
     ...base,
     async createUser(data) {
       const email = normalizeEmail(data.email);
+      // Magic-link has no open sign-up (ADR-0001). Google still creates
+      // allowlisted partners who are not yet in `users`.
+      if (!isAllowlistedPartner(email)) {
+        throw new Error("No open sign-up");
+      }
       const name = data.name?.trim() || email;
       const [row] = await db
         .insert(users)

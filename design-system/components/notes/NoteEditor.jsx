@@ -21,9 +21,9 @@ export function SidebarLink({label,color="var(--ash)",on=false,onClick,depth=0})
 export function NoteBlock({children,rise}){
   const [h,setH]=React.useState(false);
   return (<div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
-    style={{position:"relative",padding:"5px 0 5px 26px",marginTop:4,borderRadius:2,background:h?"#100c0a":undefined,transition:"background var(--dur-instant)",
+    style={{position:"relative",padding:"5px 0 5px 26px",marginTop:4,borderRadius:2,background:h?"var(--hover-row)":undefined,transition:"background var(--dur-instant)",
       animation:rise!=null?`avl-rise var(--dur-rise) var(--ease-rise) ${rise*0.05}s both`:undefined}}>
-    <div style={{position:"absolute",left:0,top:5,display:"flex",gap:2,opacity:h?1:0,transition:"opacity var(--dur-instant)",fontFamily:"var(--font-mono)",fontSize:12,color:"#463b36"}}>⣿ +</div>
+    <div style={{position:"absolute",left:0,top:5,display:"flex",gap:2,opacity:h?1:0,transition:"opacity var(--dur-instant)",fontFamily:"var(--font-mono)",fontSize:12,color:"var(--faint)"}}>⣿ +</div>
     {children}
   </div>);
 }
@@ -48,9 +48,9 @@ export function SlashMenu({items=[],heading="Blocks",onSelect,flush=false}){
     <em style={{fontStyle:"normal",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".16em",textTransform:"uppercase",color:"var(--faint)",display:"block",padding:"6px 9px 5px"}}>{heading}</em>
     {items.map(it=>(<div key={it.label} onClick={()=>{it.onClick?.();onSelect?.(it);}}
       style={{display:"flex",alignItems:"center",gap:10,padding:"7px 9px",fontSize:13,borderRadius:2,cursor:"pointer",
-      background:it.on?"#221814":undefined,color:it.on?"var(--ink)":"var(--dim)"}}>
+      background:it.on?"var(--active-row)":undefined,color:it.on?"var(--ink)":"var(--dim)"}}>
       <s style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--copper)",textDecoration:"none",width:14}}>{it.glyph}</s>{it.label}
-      {it.hint&&<b style={{marginLeft:"auto",fontFamily:"var(--font-mono)",fontSize:11,color:"#463b36",fontWeight:400}}>{it.hint}</b>}
+      {it.hint&&<b style={{marginLeft:"auto",fontFamily:"var(--font-mono)",fontSize:11,color:"var(--faint)",fontWeight:400}}>{it.hint}</b>}
     </div>))}
   </div>);
 }

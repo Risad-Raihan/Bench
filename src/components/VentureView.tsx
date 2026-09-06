@@ -12,6 +12,7 @@ import { EmptyState, Panel } from "../../design-system/components/layout/Panel.j
 import { ActionButton, DecisionRow } from "../../design-system/components/decisions/DecisionRow.jsx";
 import { ChecklistRow } from "../../design-system/components/data/FactRow.jsx";
 import { PageContainer } from "@/components/PageContainer";
+import { AccessPanel, type AccessMember } from "@/components/AccessPanel";
 import { MoveStageModal } from "@/components/MoveStageModal";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import {
@@ -125,6 +126,7 @@ export function VentureView({
   decisions,
   docs,
   activity,
+  members,
   partner = true,
 }: {
   slug: string;
@@ -156,6 +158,7 @@ export function VentureView({
   }[];
   docs?: DocsTabFile[];
   activity?: ActivityRowView[];
+  members?: AccessMember[];
   partner?: boolean;
 }) {
   const router = useRouter();
@@ -234,7 +237,7 @@ export function VentureView({
               background: "var(--bg2)",
               border: "1px solid var(--line)",
               borderRadius: 3,
-              boxShadow: "0 12px 28px rgba(0,0,0,.55)",
+              boxShadow: "var(--shadow-menu)",
               padding: "4px 0",
               zIndex: 60,
             }}
@@ -327,11 +330,13 @@ export function VentureView({
             emptyHint="Actions on this venture will appear here."
           />
         </PageContainer>
-      ) : tab === "Overview" && partner && checklist.length > 0 ? (
-        <OverviewGates
+      ) : tab === "Overview" && partner ? (
+        <Overview
           slug={slug}
+          ventureId={ventureId}
           stageLabel={stageLabel}
           checklist={checklist}
+          members={members ?? []}
         />
       ) : (
         <PageContainer>
@@ -368,14 +373,18 @@ export function VentureView({
   );
 }
 
-function OverviewGates({
+function Overview({
   slug,
+  ventureId,
   stageLabel,
   checklist,
+  members,
 }: {
   slug: string;
+  ventureId: string;
   stageLabel: string;
   checklist: VentureGateItem[];
+  members: AccessMember[];
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -384,34 +393,37 @@ function OverviewGates({
 
   return (
     <div style={{ padding: "var(--sp-14) var(--sp-22) var(--sp-22)" }}>
-      <Panel
-        label={`${stageLabel} gates`}
-        right={`${done}/${checklist.length}`}
-      >
-        {checklist.map((g) => (
-          <ChecklistRow
-            key={g.id}
-            label={g.label}
-            by={g.by}
-            done={g.done}
-            onToggle={() => {
-              if (pending) return;
-              setError(null);
-              startTransition(async () => {
-                const result = await toggleGateAction({
-                  gateItemId: g.id,
-                  slug,
+      {checklist.length > 0 ? (
+        <Panel
+          label={`${stageLabel} gates`}
+          right={`${done}/${checklist.length}`}
+        >
+          {checklist.map((g) => (
+            <ChecklistRow
+              key={g.id}
+              label={g.label}
+              by={g.by}
+              done={g.done}
+              onToggle={() => {
+                if (pending) return;
+                setError(null);
+                startTransition(async () => {
+                  const result = await toggleGateAction({
+                    gateItemId: g.id,
+                    slug,
+                  });
+                  if (!result.ok) {
+                    setError(result.error);
+                    return;
+                  }
+                  router.refresh();
                 });
-                if (!result.ok) {
-                  setError(result.error);
-                  return;
-                }
-                router.refresh();
-              });
-            }}
-          />
-        ))}
-      </Panel>
+              }}
+            />
+          ))}
+        </Panel>
+      ) : null}
+      <AccessPanel slug={slug} ventureId={ventureId} members={members} />
       {error ? (
         <div
           style={{

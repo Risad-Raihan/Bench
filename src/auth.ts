@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import type { GoogleProfile } from "next-auth/providers/google";
+import Resend from "next-auth/providers/resend";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
@@ -10,6 +11,13 @@ import {
   isPartnerGoogleSignIn,
   normalizeEmail,
 } from "@/lib/auth/partners";
+import {
+  canAcceptMagicLink,
+} from "@/lib/auth/magic-link";
+import {
+  getMagicLinkAudience,
+  sendVerificationRequest,
+} from "@/lib/auth/send-magic-link";
 import {
   interimAuthEnabled,
   interimCredentialsProvider,
@@ -23,6 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/signin",
     error: "/signin",
+    verifyRequest: "/signin",
   },
   providers: [
     Google({
@@ -37,6 +46,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             "openid email profile https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events",
         },
       },
+    }),
+    Resend({
+      from: process.env.EMAIL_FROM ?? "Bench <noreply@mail.aponvlab.io>",
+      sendVerificationRequest,
     }),
     // INTERIM: partner email+password, until the Google OAuth client lands (S2).
     ...(interimAuthEnabled() ? [interimCredentialsProvider()] : []),
@@ -53,10 +66,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return false;
     },
-    async signIn({ account, profile }) {
+    async signIn({ user, account, profile, email }) {
       // INTERIM: interimCredentialsProvider.authorize() has already checked the
       // allowlist and the disabled flag.
       if (account?.provider === "interim") return true;
+      if (account?.provider === "resend") {
+        // Sending the link always "succeeds" so we never leak whether the
+        // address is provisioned. sendVerificationRequest no-ops if not.
+        if (email?.verificationRequest) return true;
+        const audience = await getMagicLinkAudience(user.email ?? "");
+        return canAcceptMagicLink(audience);
+      }
       if (account?.provider !== "google") return false;
       const google = profile as GoogleProfile | undefined;
       if (
@@ -85,16 +105,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .where(eq(users.id, user.id))
           .limit(1);
         token.role = row?.role ?? "partner";
-      }
-      if (account?.provider === "google" && typeof token.userId === "string") {
         const patch: {
           lastSignInAt: Date;
           googleRefreshToken?: string;
         } = { lastSignInAt: new Date() };
-        if (typeof account.refresh_token === "string") {
+        if (
+          account?.provider === "google" &&
+          typeof account.refresh_token === "string"
+        ) {
           patch.googleRefreshToken = account.refresh_token;
         }
-        await db.update(users).set(patch).where(eq(users.id, token.userId));
+        await db.update(users).set(patch).where(eq(users.id, user.id));
       }
       return token;
     },

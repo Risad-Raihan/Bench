@@ -1,0 +1,92 @@
+:root{
+  /* ── surfaces, warm near-black ── */
+  --root:#070605;      /* page behind the app frame */
+  --bg:#0d0a09;        /* app canvas */
+  --bg2:#0a0807;       /* chrome bars, side rails, strips */
+  --panel:#140f0d;     /* card rest */
+  --panel2:#1b1411;    /* card hover */
+  --back-strip:#100b09;
+  --hover-row:#120d0b; /* row / block hover wash */
+  --active-row:#170f0d;/* selected row, current gate column */
+  --grid:#1a1311;      /* 1px grid gaps between columns */
+  --divider:#16100e;   /* lightest row divider */
+  --gate-empty:#2a1e1a;
+
+  /* ── hairlines ── */
+  --line:#241a17;
+  --line2:#33251f;
+
+  /* ── ink ── */
+  --ink:#F3EBE6;
+  --dim:#9b8d85;
+  --faint:#7d716a;
+  --ash:#463b36;       /* unfiled / personal / unassigned */
+  --ink-ghost:#3d332e;
+  --ink-ghost2:#3a2e29;
+  --ink-ghost3:#4d423d;
+  --body-ink:#d5c8c1;  /* long-form note paragraphs */
+  --meta-ink:#cbbdb6;
+  --quote-ink:#e3d3cc;
+
+  /* ── accents: colour has a job ── */
+  --copper:#F26430;    /* primary action, Tech lane, the brand mark */
+  --magenta:#D63A8F;   /* GTM lane, quotes, ImmiClaw identity */
+  --teal:#2E9E8F;      /* Capital lane, anything cleared or done */
+  --amber:#F2A93B;     /* the only warning colour — always means look here */
+  --violet:#8B5CF6;    /* task born inside a note, Dikkha identity */
+
+  /* ── venture identity colours ──
+     A venture owns exactly one of twelve. The first five are the semantic accents
+     above, reused as identity; clay and steel come from the v1 reference; the last
+     five were added so twelve ventures can each read distinctly. All sit in the same
+     mid-saturation band so none outshouts the amber warning, and each is spaced far
+     enough around the wheel to be told apart at a 3px card edge. */
+  --venture-clay:#C4703F;   /* muted orange-brown */
+  --venture-steel:#7BA7C4;  /* pale blue */
+  --venture-ember:#C9463C;  /* red */
+  --venture-moss:#8FA83E;   /* yellow-green */
+  --venture-fern:#4E9E5C;   /* green */
+  --venture-indigo:#5B7FD4; /* blue */
+  --venture-plum:#9B4F86;   /* purple-pink */
+
+  /* tints on accents (backgrounds + readable label ink) */
+  --copper-wash:rgba(242,100,48,.09);
+  --copper-tint:rgba(242,100,48,.14);
+  --copper-label:#FFA579;
+  --amber-tint:rgba(242,169,59,.14);
+  --amber-tint-strong:rgba(242,169,59,.16);
+  --amber-label:#F6C77A;
+  --amber-label-strong:#FFD79B;
+  --teal-tint:rgba(46,158,143,.14);
+  --teal-tint-strong:rgba(46,158,143,.16);
+  --teal-label:#7FE3C0;
+  --magenta-tint:rgba(214,58,143,.16);
+  --magenta-label:#F79BC9;
+
+  /* ink that sits ON accent fills */
+  --on-copper:#180a04;
+  --on-teal:#04201b;
+
+  /* the one gradient in the system: venture header */
+  --venture-wash:linear-gradient(97deg,#C4472A 0%,#D63A8F 44%,#8B5CF6 76%,#F2A93B 100%); /* @kind color */
+  --venture-rule:linear-gradient(90deg,var(--copper),var(--magenta),var(--violet),var(--amber)); /* @kind color */
+  --venture-wash-opacity:.17; /* @kind other */
+  --venture-sub:#e3cdc3;
+  --venture-tag-ink:#f2e2da;
+  --venture-stage-ink:#f0d9cf;
+  --venture-stage-meta:#d0aa99;
+
+  /* ── semantic aliases ── */
+  --surface-app:var(--bg);
+  --surface-chrome:var(--bg2);
+  --surface-card:var(--panel);
+  --surface-card-hover:var(--panel2);
+  --text-body:var(--ink);
+  --text-secondary:var(--dim);
+  --text-meta:var(--faint);
+  --border-hairline:var(--line);
+  --border-hairline-hover:var(--line2);
+  --accent-primary:var(--copper);
+  --accent-warning:var(--amber);
+  --accent-done:var(--teal);
+}

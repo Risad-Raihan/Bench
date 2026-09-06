@@ -1,10 +1,12 @@
 # Founder-scoped access — what still needs building
 
 A **founder** is an external `users` row (`role = "founder"`) linked to exactly
-one venture through `venture_members`. The schema and two helpers now exist:
+one venture through `venture_members`. Provisioning is partner-initiated:
 
 - `src/lib/intake/provision-founder.ts` — `provisionFounderAccess(ventureId, {name, email}, actorId)`
-  creates the user + membership. **Not wired to any UI.**
+  creates the user + membership and sends the first magic link.
+- Venture page Overview → Access: invite founder / add collaborator, resend,
+  disable.
 - `venture_members` join table, `visibility` enum (`studio` | `shared`) on
   `notes`, `docs` and `decisions`.
 
@@ -94,6 +96,22 @@ endpoint needs the same venture-scope + role check.
 
 ## 9. Provisioning UI
 
-A partner-facing "Invite founder" button on the venture page that calls
-`provisionFounderAccess` and triggers the invite email (email wiring is also
-still a TODO in that helper).
+A partner-facing "Invite founder" button on the venture page (Overview →
+Access) calls `provisionFounderAccess` and sends the first magic-link invite
+through Auth.js + Resend. "Add collaborator" uses the same path with
+`venture_members.role = collaborator`. Disable sets `users.disabled_at` and
+leaves the membership row.
+
+### Resend sending domain (HITL setup)
+
+Not code — a partner has to do this once in Resend + DNS:
+
+1. Create a Resend account and verify the domain `mail.aponvlab.io` with
+   SPF, DKIM, and DMARC.
+2. Set `AUTH_RESEND_KEY` (the Resend API key) in Vercel env and `.env.local`.
+3. Optional: `EMAIL_FROM=Bench <noreply@mail.aponvlab.io>` — that is the
+   default in code if unset.
+
+Until those are set, invite/resend/sign-in-link still provision the user
+row, but the email send throws "Email is not configured." Use **Resend
+link** after the key is in place.

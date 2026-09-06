@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/tokens/colors.css">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/tokens/typography.css">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/tokens/borders.css">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/tokens/motion.css">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/tokens/base.css">
+<link rel="stylesheet" href="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/styles.css">
+<script src="_ds/bench-design-system-5531ba46-cb83-433e-832d-3e8bd3ad601b/_ds_bundle.js"></script>
+<style>
+  body{margin:0;background:#070605;}
+  a{color:#F26430;text-decoration:none;}
+  a:hover{color:#FFA579;}
+</style>
+</helmet>
+
+<section style="background:#070605; padding:34px 34px 64px; font-family:'IBM Plex Sans',system-ui,sans-serif; color:#F3EBE6; display:flex; flex-direction:column; gap:26px;">
+
+  <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:44px; padding-bottom:16px; border-bottom:1px solid #241a17;">
+    <div style="max-width:720px; display:flex; flex-direction:column; gap:10px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#7d716a;">Bench · design exploration · light mode</div>
+      <div style="font-size:33px; font-weight:600; letter-spacing:-.03em; line-height:1.1;">Three light directions, five screens each, one token map</div>
+      <div style="font-size:14px; line-height:1.7; color:#9b8d85;">No product code changes. Density, hairlines, mono figures, hover-only actions and the 150ms ceiling are unchanged — only surface, ink and tint values move. The venture header keeps the one gradient, re-tuned so a 17% wash on near-black becomes a 14% wash on cream. Recommendation: <a href="#1a">1a</a>, warm cream — it is the only direction that keeps Bench's red-shifted neutral, so a partner switching modes mid-day recognises the same tool.</div>
+    </div>
+    <div style="display:flex; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#9b8d85;">
+      <div style="border:1px solid #241a17; background:#140f0d; padding:9px 11px;">3 directions</div>
+      <div style="border:1px solid #241a17; background:#140f0d; padding:9px 11px;">5 screens</div>
+      <div style="border:1px solid #241a17; background:#140f0d; padding:9px 11px;">{{ tokenCount }} tokens</div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap;">
+    <sc-for list="{{ themes }}" as="t" hint-placeholder-count="3">
+      <div id="{{ t.id }}" style="width:912px; display:flex; flex-direction:column; gap:12px;">
+
+        <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:10px; border-bottom:1px solid #241a17;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#180a04; background:#F26430; padding:4px 7px; border-radius:2px;">{{ t.id }}</span>
+          <span style="font-size:25px; font-weight:600; letter-spacing:-.025em;">{{ t.name }}</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#7d716a;">{{ t.tag }}</span>
+        </div>
+        <div style="font-size:13.5px; line-height:1.7; color:#9b8d85; max-width:860px;">{{ t.note }}</div>
+
+        <div style="border:1px solid #241a17; border-radius:2px; padding:14px; background:#0a0807; display:flex; gap:1px; background-color:#1a1311;">
+          <sc-for list="{{ t.swatches }}" as="s" hint-placeholder-count="4">
+            <div style="flex:1; min-width:0; padding:14px 13px; background: {{ s.bg }}; border: {{ s.border }};">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ s.ink }};">{{ s.label }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; margin-top:8px; color: {{ s.ink2 }}; font-variant-numeric:tabular-nums;">{{ s.value }}</div>
+              <div style="font-size:12.5px; margin-top:6px; color: {{ s.ink2 }}; line-height:1.5;">{{ s.use }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;">
+
+          <div style="grid-column:span 2; border:1px solid #241a17; border-radius:2px; overflow:hidden;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#7d716a; padding:8px 12px; background:#0a0807; border-bottom:1px solid #241a17;">Screen 01 · pipeline list</div>
+            <div style="background: {{ t.appBg }}; padding:0;">
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background: {{ t.chromeBg }}; border-bottom:1px solid {{ t.line }};">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="width:19px; height:19px; border-radius:2px; background: {{ t.copper }}; color: {{ t.onCopper }}; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; display:grid; place-items:center;">A</span>
+                  <span style="font-size:14px; font-weight:600; letter-spacing:-.015em; color: {{ t.ink }};">Pipeline</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }}; font-variant-numeric:tabular-nums;">6 active · 1 stalled · synced 14:22 +06</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; background: {{ t.copper }}; color: {{ t.onCopper }}; padding:6px 9px; border-radius:2px;">+ New venture</span>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:26px 1fr 128px 132px 82px 74px; gap:12px; padding:9px 16px; background: {{ t.sunken }}; border-bottom:1px solid {{ t.line }}; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color: {{ t.faint }};">
+                <div></div><div>Venture</div><div>Stage</div><div>Gates</div><div>Stake</div><div>In stage</div>
+              </div>
+              <sc-for list="{{ t.ventures }}" as="v" hint-placeholder-count="4">
+                <div style="display:grid; grid-template-columns:26px 1fr 128px 132px 82px 74px; gap:12px; align-items:center; padding:11px 16px; background: {{ v.rowBg }}; border-bottom:1px solid {{ t.divider }}; border-left:3px solid {{ v.color }};">
+                  <div style="width:8px; height:8px; border-radius:2px; background: {{ v.color }};"></div>
+                  <div style="min-width:0;">
+                    <div style="font-size:13.5px; font-weight:600; letter-spacing:-.01em; color: {{ t.ink }};">{{ v.name }}</div>
+                    <div style="font-size:11.5px; color: {{ t.dim }}; margin-top:2px;">{{ v.caption }}</div>
+                  </div>
+                  <div>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:4px 7px; border-radius:2px; background: {{ v.chipBg }}; color: {{ v.chipInk }}; border:1px solid {{ v.chipLine }};">{{ v.stage }}</span>
+                  </div>
+                  <div style="display:flex; gap:2px; align-items:center;">
+                    <sc-for list="{{ v.gates }}" as="g" hint-placeholder-count="6">
+                      <span style="height:3px; width:16px; border-radius:1px; background: {{ g.bg }};"></span>
+                    </sc-for>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; margin-left:7px; color: {{ t.dim }}; font-variant-numeric:tabular-nums;">{{ v.gateLabel }}</span>
+                  </div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color: {{ t.figure }}; font-variant-numeric:tabular-nums;">{{ v.stake }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color: {{ v.ageInk }}; font-variant-numeric:tabular-nums;">{{ v.age }}</div>
+                </div>
+              </sc-for>
+              <div style="display:flex; gap:16px; padding:10px 16px; background: {{ t.chromeBg }}; border-top:1px solid {{ t.line }}; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">
+                <span>Row hover = surface step + 2px nudge</span>
+                <span>Figures tabular</span>
+                <span>Actions on hover only</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid #241a17; border-radius:2px; overflow:hidden;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#7d716a; padding:8px 12px; background:#0a0807; border-bottom:1px solid #241a17;">Screen 02 · venture · the one gradient</div>
+            <div style="background: {{ t.appBg }};">
+              <div style="height:2px; background: {{ t.headerRule }};"></div>
+              <div style="background: {{ t.headerWash }}; padding:16px; border-bottom:1px solid {{ t.line }};">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.dim }};">← Pipeline / <span style="color: {{ t.magenta }};">ImmiClaw</span></div>
+                <div style="display:flex; align-items:baseline; gap:11px; margin-top:9px;">
+                  <span style="font-size:31px; font-weight:600; letter-spacing:-.03em; color: {{ t.ink }};">ImmiClaw</span>
+                  <span style="font-size:13.5px; color: {{ t.dim }};">Study abroad, Africa</span>
+                </div>
+                <div style="display:flex; gap:6px; margin-top:12px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:4px 8px; border-radius:2px; background: {{ t.tagBg }}; border:1px solid {{ t.tagLine }}; color: {{ t.tagInk }};">Build</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:4px 8px; border-radius:2px; background: {{ t.tagBg }}; border:1px solid {{ t.tagLine }}; color: {{ t.tagInk }};">GTM lane</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:4px 8px; border-radius:2px; background: {{ t.tagBg }}; border:1px solid {{ t.tagLine }}; color: {{ t.tagInk }};">Tunde Adeyemi</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:1px; background: {{ t.grid }}; border-bottom:1px solid {{ t.line }};">
+                <span style="background: {{ t.raised }}; border-top:2px solid {{ t.magenta }}; padding:9px 13px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.ink }};">Overview</span>
+                <span style="background: {{ t.chromeBg }}; padding:9px 13px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.dim }};">Docs</span>
+                <span style="background: {{ t.chromeBg }}; padding:9px 13px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.dim }};">Notes</span>
+                <span style="background: {{ t.chromeBg }}; padding:9px 13px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.dim }};">Tasks</span>
+                <span style="background: {{ t.chromeBg }}; padding:9px 13px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.dim }};">Decisions</span>
+                <span style="flex:1; background: {{ t.chromeBg }};"></span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background: {{ t.grid }};">
+                <div style="background: {{ t.sunken }}; padding:13px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:25px; color: {{ t.figure }}; font-variant-numeric:tabular-nums;">31.6</div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }}; margin-top:5px;">Stake %</div>
+                </div>
+                <div style="background: {{ t.sunken }}; padding:13px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:25px; color: {{ t.figure }}; font-variant-numeric:tabular-nums;">4/6</div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }}; margin-top:5px;">Gates cleared</div>
+                </div>
+                <div style="background: {{ t.sunken }}; padding:13px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:25px; color: {{ t.amberInk }}; font-variant-numeric:tabular-nums;">19</div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }}; margin-top:5px;">Days in stage</div>
+                </div>
+              </div>
+              <div style="padding:13px 16px; display:flex; flex-direction:column; gap:9px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:9px; border-bottom:1px solid {{ t.divider }};">
+                  <span style="font-size:13.5px; color: {{ t.body }};">Play Store install target</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color: {{ t.figure }}; font-variant-numeric:tabular-nums;">12,400</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:13.5px; color: {{ t.body }};">Term sheet</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:4px 7px; border-radius:2px; background: {{ t.tealTint }}; color: {{ t.tealLabel }};">Cleared 11 aug</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid #241a17; border-radius:2px; overflow:hidden;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#7d716a; padding:8px 12px; background:#0a0807; border-bottom:1px solid #241a17;">Screen 04 · panel over the list</div>
+            <div style="position:relative; background: {{ t.appBg }}; min-height:404px; overflow:hidden;">
+              <div style="padding:0;">
+                <sc-for list="{{ t.ventures }}" as="v" hint-placeholder-count="4">
+                  <div style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid {{ t.divider }}; border-left:3px solid {{ v.color }}; background: {{ t.raised }};">
+                    <span style="width:8px; height:8px; border-radius:2px; background: {{ v.color }};"></span>
+                    <span style="font-size:13.5px; font-weight:600; color: {{ t.ink }};">{{ v.name }}</span>
+                    <span style="font-size:11.5px; color: {{ t.dim }};">{{ v.caption }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="position:absolute; inset:0; background: {{ t.scrim }};"></div>
+              <div style="position:absolute; top:0; right:0; bottom:0; width:284px; background: {{ t.overlay }}; border-left:1px solid {{ t.line2 }}; box-shadow: {{ t.panelShadow }}; padding:16px; display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color: {{ t.faint }};">Gate detail</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color: {{ t.dim }};">esc</span>
+                </div>
+                <div style="font-size:14.5px; font-weight:600; letter-spacing:-.015em; color: {{ t.ink }}; line-height:1.4;">Draft term sheet, no exclusivity</div>
+                <div style="font-size:13px; line-height:1.7; color: {{ t.body }};">Panels are the third level Bench does not have. Surface steps up from the list, hairline steps up with it, and the scrim is warm ink at 34% — not black.</div>
+                <div style="display:flex; flex-direction:column; gap:0; border-top:1px solid {{ t.divider }};">
+                  <div style="display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid {{ t.divider }};">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Owner</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; border:1px solid {{ t.line2 }}; padding:3px 5px; border-radius:2px; color: {{ t.ink }};">RN</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid {{ t.divider }};">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Due</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color: {{ t.dangerFg }}; font-variant-numeric:tabular-nums;">24 aug · 2d late</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:9px 0;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Source</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:3px 6px; border-radius:2px; background: {{ t.violetTint }}; color: {{ t.violetLabel }};">From note</span>
+                  </div>
+                </div>
+                <div style="margin-top:auto; display:flex; gap:8px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; background: {{ t.copper }}; color: {{ t.onCopper }}; padding:8px 11px; border-radius:2px;">Mark cleared</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; border:1px solid {{ t.line2 }}; color: {{ t.dim }}; padding:8px 11px; border-radius:2px;">Reassign</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="grid-column:span 2; border:1px solid #241a17; border-radius:2px; overflow:hidden;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#7d716a; padding:8px 12px; background:#0a0807; border-bottom:1px solid #241a17;">Screen 03 · notes · the editor that is dark today</div>
+            <div style="display:grid; grid-template-columns:170px minmax(0,1fr) 176px; gap:1px; background: {{ t.grid }}; min-height:470px;">
+              <div style="background: {{ t.sunken }}; padding:13px 11px; display:flex; flex-direction:column; gap:2px;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color: {{ t.faint }}; padding:0 5px 8px;">Notes</div>
+                <sc-for list="{{ t.noteLinks }}" as="n" hint-placeholder-count="4">
+                  <div style="display:flex; align-items:center; gap:8px; padding:7px 5px 7px 7px; border-left:2px solid {{ n.edge }}; background: {{ n.bg }};">
+                    <span style="width:5px; height:5px; border-radius:1px; background: {{ n.dot }};"></span>
+                    <span style="font-size:13px; color: {{ n.ink }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ n.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background: {{ t.editorBg }}; padding:20px 26px; position:relative;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color: {{ t.faint }};">ImmiClaw · 24 aug</div>
+                <div style="font-size:25px; font-weight:600; letter-spacing:-.03em; color: {{ t.ink }}; margin-top:10px;">Lagos market memo, first pass</div>
+                <div style="font-size:14.5px; line-height:1.75; color: {{ t.body }}; margin-top:14px; max-width:640px;">Tunde's agent count is the number that matters. Everything else in the funnel <span style="background: {{ t.selection }}; color: {{ t.ink }};">follows from how many agents we can sign before December</span>, so the memo leads with it.<span style="display:inline-block; width:2px; height:17px; background: {{ t.caret }}; vertical-align:-3px; margin-left:1px;"></span></div>
+
+                <div style="display:flex; align-items:center; gap:9px; margin-top:14px; padding:9px 11px; background: {{ t.blockHover }}; border-radius:2px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color: {{ t.ghost }};">⣿</span>
+                  <span style="width:13px; height:13px; border:1px solid {{ t.line2 }}; border-radius:2px; background: {{ t.raised }};"></span>
+                  <span style="font-size:14px; color: {{ t.ink }};">Write the Lagos market memo</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:3px 6px; border-radius:2px; background: {{ t.violetTint }}; color: {{ t.violetLabel }};">/task · from note</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:3px 6px; border-radius:2px; background: {{ t.magentaTint }}; color: {{ t.magentaLabel }};">@immiclaw</span>
+                </div>
+
+                <div style="font-size:14.5px; line-height:1.75; color: {{ t.body }}; margin-top:14px; max-width:640px;">Agent onboarding is two calls and a form. The form is the part we own — <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; background: {{ t.codeInline }}; border:1px solid {{ t.line }}; border-radius:2px; padding:1px 5px; color: {{ t.copperLabel }};">POST /agents/verify</span> is the only endpoint that needs to exist for the pilot.</div>
+
+                <div style="margin-top:14px; border-left:2px solid {{ t.magenta }}; padding:2px 0 2px 13px; font-size:14.5px; line-height:1.7; color: {{ t.quoteInk }}; max-width:620px;">❝ Every agent we sign brings four students with them. — Tunde, 21 Aug</div>
+
+                <div style="margin-top:14px; background: {{ t.codeBlock }}; border:1px solid {{ t.line }}; border-radius:2px; padding:12px 13px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.8; color: {{ t.codeInk }}; max-width:640px;">
+                  <div><span style="color: {{ t.codeKey }};">agents_signed</span> = <span style="color: {{ t.codeNum }};">128</span></div>
+                  <div><span style="color: {{ t.codeKey }};">students_per_agent</span> = <span style="color: {{ t.codeNum }};">4.1</span></div>
+                  <div><span style="color: {{ t.codeComment }};"># pilot target, December</span></div>
+                </div>
+
+                <div style="position:absolute; left:236px; bottom:22px; width:212px; background: {{ t.overlay }}; border:1px solid {{ t.line2 }}; border-radius:3px; box-shadow: {{ t.menuShadow }}; padding:5px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }}; padding:6px 8px;">/ta</div>
+                  <sc-for list="{{ t.slashItems }}" as="m" hint-placeholder-count="4">
+                    <div style="display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:2px; background: {{ m.bg }};">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color: {{ m.glyphInk }}; width:14px;">{{ m.glyph }}</span>
+                      <span style="font-size:13px; color: {{ m.ink }};">{{ m.label }}</span>
+                      <span style="margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; color: {{ t.faint }};">{{ m.key }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background: {{ t.sunken }}; padding:13px 12px; display:flex; flex-direction:column; gap:11px;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color: {{ t.faint }};">Meta</div>
+                <div style="display:flex; flex-direction:column; gap:7px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Venture</span>
+                  <span style="font-size:13px; color: {{ t.ink }}; display:flex; align-items:center; gap:7px;"><span style="width:7px;height:7px;border-radius:1px;background: {{ t.magenta }};"></span>ImmiClaw</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:7px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Tasks born here</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color: {{ t.figure }}; font-variant-numeric:tabular-nums;">3</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:7px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Unfiled</span>
+                  <span style="font-size:13px; color: {{ t.ashInk }}; display:flex; align-items:center; gap:7px;"><span style="width:7px;height:7px;border-radius:1px;background: {{ t.ash }};"></span>Personal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="grid-column:span 2; border:1px solid #241a17; border-radius:2px; overflow:hidden;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#7d716a; padding:8px 12px; background:#0a0807; border-bottom:1px solid #241a17;">Screen 05 · new venture form · rest, focus, open, disabled</div>
+            <div style="background: {{ t.appBg }}; padding:18px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; align-items:start;">
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Venture name</span>
+                  <div style="background: {{ t.raised }}; border:1px solid {{ t.line }}; border-radius:2px; padding:9px 11px; font-size:13.5px; color: {{ t.ink }};">Chhar</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">One-liner · focused</span>
+                  <div style="background: {{ t.raised }}; border:1px solid {{ t.copper }}; border-radius:2px; padding:9px 11px; font-size:13.5px; color: {{ t.ink }}; box-shadow: {{ t.focusRing }};">Bank reporting agent, BD<span style="display:inline-block; width:2px; height:15px; background: {{ t.caret }}; vertical-align:-2px; margin-left:1px;"></span></div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Deck · disabled until named</span>
+                  <div style="background: {{ t.disabledBg }}; border:1px dashed {{ t.line2 }}; border-radius:2px; padding:9px 11px; font-size:13.5px; color: {{ t.disabledInk }};">Drop a PDF</div>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Owner · open</span>
+                <div style="background: {{ t.raised }}; border:1px solid {{ t.line2 }}; border-radius:2px 2px 0 0; padding:9px 11px; font-size:13.5px; color: {{ t.ink }}; display:flex; justify-content:space-between;"><span>Rashed Nabi</span><span style="color: {{ t.dim }};">▾</span></div>
+                <div style="background: {{ t.overlay }}; border:1px solid {{ t.line2 }}; border-top:none; border-radius:0 0 3px 3px; box-shadow: {{ t.menuShadow }}; padding:4px;">
+                  <div style="display:flex; align-items:center; gap:9px; padding:8px 9px; border-radius:2px; background: {{ t.selectedRow }};"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; border:1px solid {{ t.line2 }}; padding:2px 4px; border-radius:2px; color: {{ t.ink }};">RN</span><span style="font-size:13px; color: {{ t.ink }};">Rashed Nabi</span><span style="margin-left:auto; color: {{ t.teal }};">✓</span></div>
+                  <div style="display:flex; align-items:center; gap:9px; padding:8px 9px; border-radius:2px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; border:1px solid {{ t.line2 }}; padding:2px 4px; border-radius:2px; color: {{ t.ink }};">MS</span><span style="font-size:13px; color: {{ t.ink }};">Mufassal Siraj</span></div>
+                  <div style="display:flex; align-items:center; gap:9px; padding:8px 9px; border-radius:2px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; border:1px solid {{ t.line2 }}; padding:2px 4px; border-radius:2px; color: {{ t.ink }};">SR</span><span style="font-size:13px; color: {{ t.ink }};">Sabbir Rahman</span></div>
+                  <div style="display:flex; align-items:center; gap:9px; padding:8px 9px; border-radius:2px; opacity:.55;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; border:1px solid {{ t.line2 }}; padding:2px 4px; border-radius:2px; color: {{ t.disabledInk }};">RM</span><span style="font-size:13px; color: {{ t.disabledInk }};">Risad Mahmud · away</span></div>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; flex-direction:column; gap:7px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color: {{ t.faint }};">Identity colour</span>
+                  <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                    <sc-for list="{{ t.identity }}" as="c" hint-placeholder-count="12">
+                      <span style="width:22px; height:22px; border-radius:2px; background: {{ c.bg }}; border:1px solid {{ c.line }}; box-shadow: {{ c.ring }};"></span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; background: {{ t.copper }}; color: {{ t.onCopper }}; padding:9px 12px; border-radius:2px;">Create and open</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; border:1px solid {{ t.line2 }}; color: {{ t.dim }}; padding:9px 12px; border-radius:2px;">Cancel</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; background: {{ t.disabledBg }}; border:1px solid {{ t.line }}; color: {{ t.disabledInk }}; padding:9px 12px; border-radius:2px;">Save draft</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; gap:8px; align-items:center; background: {{ t.dangerBg }}; border:1px solid {{ t.dangerLine }}; border-radius:2px; padding:8px 10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.dangerFg }};">Name taken</span></div>
+                  <div style="display:flex; gap:8px; align-items:center; background: {{ t.warnBg }}; border:1px solid {{ t.warnLine }}; border-radius:2px; padding:8px 10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.warnFg }};">No deck · look here</span></div>
+                  <div style="display:flex; gap:8px; align-items:center; background: {{ t.okBg }}; border:1px solid {{ t.okLine }}; border-radius:2px; padding:8px 10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: {{ t.okFg }};">Calendar synced</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px; padding-top:8px;">
+    <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:10px; border-bottom:1px solid #241a17;">
+      <span style="font-size:25px; font-weight:600; letter-spacing:-.025em;">Token map — direction 1a, warm cream</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#7d716a;">{{ filterLabel }} · {{ shownCount }} rows · amber flag = needs a decision</span>
+    </div>
+    <div style="font-size:13.5px; line-height:1.7; color:#9b8d85; max-width:860px;">Same token names, one extra layer: values move into a <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#F3EBE6;">[data-theme="light"]</span> block so nothing renames and no component reads a mode flag. Rows marked with the amber flag have no clean mechanical inversion and need a call from you.</div>
+
+    <div style="border:1px solid #241a17; border-radius:2px; overflow:hidden;">
+      <div style="display:grid; grid-template-columns:236px 1fr 1fr 1fr; gap:0; background:#0a0807; border-bottom:1px solid #241a17; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#7d716a;">
+        <div style="padding:10px 13px;">Token</div>
+        <div style="padding:10px 13px;">Dark (today)</div>
+        <div style="padding:10px 13px;">Light (proposed)</div>
+        <div style="padding:10px 13px;">Reasoning / decision</div>
+      </div>
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="8">
+        <div>
+          <div style="padding:11px 13px; background:#100b09; border-bottom:1px solid #241a17; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#F6C77A;">{{ g.name }}</div>
+          <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+            <div style="display:grid; grid-template-columns:236px 1fr 1fr 1fr; gap:0; border-bottom:1px solid #16100e; background: {{ r.rowBg }};">
+              <div style="padding:9px 13px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#F3EBE6; display:flex; align-items:center; gap:7px;"><span style="color:#F2A93B; width:9px;">{{ r.flagMark }}</span>{{ r.token }}</div>
+              <div style="padding:9px 13px; display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#9b8d85; border-left:1px solid #16100e;"><span style="width:13px; height:13px; border-radius:2px; border:1px solid #33251f; background: {{ r.darkSwatch }}; flex:none;"></span>{{ r.dark }}</div>
+              <div style="padding:9px 13px; display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#F3EBE6; border-left:1px solid #16100e;"><span style="width:13px; height:13px; border-radius:2px; border:1px solid #33251f; background: {{ r.lightSwatch }}; flex:none;"></span>{{ r.light }}</div>
+              <div style="padding:9px 13px; font-size:12.5px; line-height:1.55; color: {{ r.noteInk }}; border-left:1px solid #16100e;">{{ r.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px; padding-top:8px;">
+    <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:10px; border-bottom:1px solid #241a17;">
+      <span style="font-size:25px; font-weight:600; letter-spacing:-.025em;">Don't miss</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#7d716a;">components that break when lightness stops meaning elevation</span>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;">
+      <sc-for list="{{ checklist }}" as="c" hint-placeholder-count="9">
+        <div style="background:#140f0d; border:1px solid #241a17; border-left:2px solid {{ c.edge }}; border-radius:2px; padding:12px 13px; display:flex; flex-direction:column; gap:6px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:{{ c.edge }};">{{ c.kind }}</div>
+          <div style="font-size:14px; font-weight:600; letter-spacing:-.015em; color:#F3EBE6;">{{ c.title }}</div>
+          <div style="font-size:12.5px; line-height:1.6; color:#9b8d85;">{{ c.body }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;},&quot;showDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Token map&quot;},&quot;tokenFilter&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;All tokens&quot;,&quot;Needs a decision only&quot;],&quot;default&quot;:&quot;All tokens&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Token map&quot;},&quot;noiseStrength&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.5,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Direction 1c&quot;}}">
+class Component extends DCLogic {
+  themeA() {
+    return {
+      id: "1a", name: "Warm cream, flat", tag: "recommended",
+      note: "Every neutral stays red-shifted, exactly as the dark palette is. Surfaces are flat — no gradient anywhere except the venture header — and separation is done the way dark does it: one surface step plus a hairline. Cream reads as paper under warm office light, so amber and copper keep their meaning instead of turning muddy.",
+      appBg: "#F7F2EA", chromeBg: "#F1EBE1", raised: "#FFFDF9", raisedHover: "#FFFFFF",
+      sunken: "#EFE8DC", editorBg: "#FFFDF9", blockHover: "#F4EEE4", selectedRow: "#FBEFE7",
+      overlay: "#FFFDF9", line: "#E2D9CB", line2: "#CDC0AE", divider: "#EDE5D9", grid: "#E7DFD2",
+      ink: "#241C17", body: "#332A24", dim: "#6B5F57", faint: "#857870", figure: "#241C17",
+      quoteInk: "#2E241E", ghost: "#BCAE9F", ash: "#A4968C", ashInk: "#6B5F57",
+      copper: "#C6491C", copperLabel: "#A33A11", magenta: "#AE2470", magentaLabel: "#8E1A5B",
+      teal: "#17786B", tealLabel: "#0F5F55", violet: "#6636CE", violetLabel: "#5427B4",
+      amber: "#F2A93B", amberInk: "#8A5A05",
+      onCopper: "#FFF6F1", scrim: "rgba(36,28,23,.34)",
+      selection: "rgba(198,73,28,.18)", caret: "#C6491C",
+      codeInline: "#F6EFE6", codeBlock: "#F4EDE2", codeInk: "#332A24", codeKey: "#A33A11", codeNum: "#0F5F55", codeComment: "#857870",
+      tealTint: "rgba(23,120,107,.11)", magentaTint: "rgba(174,36,112,.10)", violetTint: "rgba(102,54,206,.10)",
+      dangerBg: "#FCEAE4", dangerFg: "#A33A11", dangerLine: "#F0CBBB",
+      warnBg: "#FDF2DC", warnFg: "#7A4E04", warnLine: "#EFD9A6",
+      okBg: "#E7F4F0", okFg: "#0F5F55", okLine: "#BFDDD6",
+      disabledBg: "#EFE8DC", disabledInk: "#9C9086",
+      focusRing: "0 0 0 3px rgba(198,73,28,.20)",
+      menuShadow: "0 10px 26px rgba(60,44,34,.16)", panelShadow: "-14px 0 34px rgba(60,44,34,.12)",
+      headerWash: "linear-gradient(97deg, rgba(174,36,112,.16) 0%, rgba(174,36,112,0) 74%), #FFFDF9",
+      headerRule: "linear-gradient(90deg,#AE2470,rgba(174,36,112,0))",
+      tagBg: "rgba(255,255,255,.62)", tagLine: "rgba(36,28,23,.14)", tagInk: "#3E2A2A"
+    };
+  }
+  themeB() {
+    return {
+      id: "1b", name: "Cool paper, top-down gradient", tag: "the most conventional",
+      note: "Neutrals lose the red shift and pick up a faint blue. The app canvas carries a single 180° wash from #FBFBFC to #F2F3F5 — subtle enough to survive at 13px, but it does spend a second gradient, which the six rules reserve for the venture header. Copper on cool grey reads slightly hotter, and the warm wordmark sits less comfortably.",
+      appBg: "linear-gradient(180deg,#FBFBFC 0%,#F1F2F5 100%)", chromeBg: "#F4F5F7", raised: "#FFFFFF", raisedHover: "#FFFFFF",
+      sunken: "#ECEEF1", editorBg: "linear-gradient(180deg,#FFFFFF 0%,#FAFBFC 100%)", blockHover: "#F2F4F7", selectedRow: "#FBEDE7",
+      overlay: "#FFFFFF", line: "#E2E4E8", line2: "#CBCFD6", divider: "#EDEFF2", grid: "#E6E8EC",
+      ink: "#14181D", body: "#252B33", dim: "#5B636E", faint: "#7B838F", figure: "#14181D",
+      quoteInk: "#1E242B", ghost: "#B4BAC3", ash: "#98A0AB", ashInk: "#5B636E",
+      copper: "#C24A1E", copperLabel: "#9E3812", magenta: "#AD2570", magentaLabel: "#8C1A59",
+      teal: "#16776B", tealLabel: "#0E5C52", violet: "#5B3BD1", violetLabel: "#4728AE",
+      amber: "#F2A93B", amberInk: "#845905",
+      onCopper: "#FFF6F1", scrim: "rgba(20,24,29,.36)",
+      selection: "rgba(91,59,209,.16)", caret: "#C24A1E",
+      codeInline: "#F3F4F7", codeBlock: "#F1F3F6", codeInk: "#252B33", codeKey: "#9E3812", codeNum: "#0E5C52", codeComment: "#7B838F",
+      tealTint: "rgba(22,119,107,.11)", magentaTint: "rgba(173,37,112,.10)", violetTint: "rgba(91,59,209,.10)",
+      dangerBg: "#FBE9E3", dangerFg: "#9E3812", dangerLine: "#F0CABA",
+      warnBg: "#FBF1DA", warnFg: "#845905", warnLine: "#EDD7A2",
+      okBg: "#E4F2EF", okFg: "#0E5C52", okLine: "#BBDBD4",
+      disabledBg: "#ECEEF1", disabledInk: "#949CA6",
+      focusRing: "0 0 0 3px rgba(194,74,30,.20)",
+      menuShadow: "0 10px 26px rgba(20,24,29,.14)", panelShadow: "-14px 0 34px rgba(20,24,29,.10)",
+      headerWash: "linear-gradient(97deg, rgba(173,37,112,.15) 0%, rgba(173,37,112,0) 74%), #FFFFFF",
+      headerRule: "linear-gradient(90deg,#AD2570,rgba(173,37,112,0))",
+      tagBg: "rgba(255,255,255,.66)", tagLine: "rgba(20,24,29,.13)", tagInk: "#2B313A"
+    };
+  }
+  themeC() {
+    const n = this.props.noiseStrength ?? .5;
+    const noise = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"140\" height=\"140\"><filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.85\" numOctaves=\"3\" stitchTiles=\"stitch\"/><feColorMatrix type=\"saturate\" values=\"0\"/></filter><rect width=\"140\" height=\"140\" filter=\"url(%23n)\" opacity=\"" + (0.06 + n * 0.10).toFixed(3) + "\"/></svg>')";
+    return {
+      id: "1c", name: "Off-white with grain, warmer surfaces", tag: "texture as the surface step",
+      note: "The canvas carries a fixed grain (" + Math.round((0.06 + n * 0.10) * 100) + "% alpha, 140px tile) and every raised surface is clean — texture becomes the sunken/raised signal, which lets the hairlines get lighter. Cards run warmer than 1a so they lift off the grain without a shadow. Risk: grain is a per-pixel cost on a screen with 40 rows, and it reads as noise on a low-quality external monitor.",
+      appBg: noise + ", #F6F3EE", chromeBg: noise + ", #F2EEE7", raised: "#FFFCF6", raisedHover: "#FFFFFF",
+      sunken: noise + ", #EBE6DE", editorBg: "#FFFCF6", blockHover: "#F6F1E8", selectedRow: "#FCEFE6",
+      overlay: "#FFFCF6", line: "#E6DFD2", line2: "#CEC4B5", divider: "#F0E9DE", grid: "#E9E2D6",
+      ink: "#1E1A16", body: "#2E2721", dim: "#675E55", faint: "#82766D", figure: "#1E1A16",
+      quoteInk: "#29221C", ghost: "#BEB1A2", ash: "#A29488", ashInk: "#675E55",
+      copper: "#C14A20", copperLabel: "#9E3A13", magenta: "#A9276E", magentaLabel: "#891C58",
+      teal: "#157468", tealLabel: "#0D5A50", violet: "#6335C6", violetLabel: "#4F26AC",
+      amber: "#EDA435", amberInk: "#855703",
+      onCopper: "#FFF7F2", scrim: "rgba(30,26,22,.36)",
+      selection: "rgba(193,74,32,.18)", caret: "#C14A20",
+      codeInline: "#F5EEE4", codeBlock: "#F3ECE0", codeInk: "#2E2721", codeKey: "#9E3A13", codeNum: "#0D5A50", codeComment: "#82766D",
+      tealTint: "rgba(21,116,104,.11)", magentaTint: "rgba(169,39,110,.10)", violetTint: "rgba(99,53,198,.10)",
+      dangerBg: "#FBE9E2", dangerFg: "#9E3A13", dangerLine: "#EFC9B8",
+      warnBg: "#FCF1D9", warnFg: "#855703", warnLine: "#EDD6A0",
+      okBg: "#E5F2EE", okFg: "#0D5A50", okLine: "#BCDAD3",
+      disabledBg: "#EBE6DE", disabledInk: "#9B8F84",
+      focusRing: "0 0 0 3px rgba(193,74,32,.20)",
+      menuShadow: "0 10px 26px rgba(52,40,30,.16)", panelShadow: "-14px 0 34px rgba(52,40,30,.12)",
+      headerWash: "linear-gradient(97deg, rgba(169,39,110,.17) 0%, rgba(169,39,110,0) 74%), #FFFCF6",
+      headerRule: "linear-gradient(90deg,#A9276E,rgba(169,39,110,0))",
+      tagBg: "rgba(255,255,255,.60)", tagLine: "rgba(30,26,22,.14)", tagInk: "#3A2A26"
+    };
+  }
+
+  ventureData() {
+    return [
+      { name: "ImmiClaw", caption: "Study abroad, Africa", stage: "Build", cleared: 4, stake: "31.6", age: "19 days", late: false, key: "magenta" },
+      { name: "Dikkha", caption: "Teacher CPD, live pilot", stage: "Validate", cleared: 2, stake: "22.0", age: "9 days", late: false, key: "violet" },
+      { name: "Chhar", caption: "Bank reporting agent, BD", stage: "Form", cleared: 5, stake: "18.4", age: "4 days", late: false, key: "teal" },
+      { name: "Nagad Deals", caption: "Deals app, live on Play", stage: "Grow", cleared: 6, stake: "12.0", age: "31 days", late: true, key: "copper" }
+    ];
+  }
+
+  buildTheme(t) {
+    const chip = { Build: [t.magentaTint, t.magentaLabel], Validate: [t.violetTint, t.violetLabel], Form: [t.tealTint, t.tealLabel], Grow: [t.selectedRow, t.copperLabel] };
+    t.ventures = this.ventureData().map((v, i) => {
+      const color = t[v.key];
+      const gates = [];
+      for (let k = 0; k < 6; k++) gates.push({ bg: k < v.cleared ? t.teal : t.line2 });
+      return {
+        name: v.name, caption: v.caption, stage: v.stage, stake: v.stake, age: v.age, gates: gates,
+        gateLabel: v.cleared + "/6", color: color,
+        rowBg: i === 1 ? t.raisedHover : t.raised,
+        chipBg: chip[v.stage][0], chipInk: chip[v.stage][1], chipLine: t.line,
+        ageInk: v.late ? t.amberInk : t.dim
+      };
+    });
+    t.noteLinks = [
+      { label: "Lagos market memo", dot: t.magenta, ink: t.ink, bg: t.selectedRow, edge: t.copper },
+      { label: "Who we should not back", dot: t.ash, ink: t.dim, bg: "transparent", edge: "transparent" },
+      { label: "Chhar, bank calls", dot: t.teal, ink: t.dim, bg: "transparent", edge: "transparent" },
+      { label: "Week of 17 August", dot: t.violet, ink: t.dim, bg: "transparent", edge: "transparent" }
+    ];
+    t.slashItems = [
+      { glyph: "☑", label: "Task", key: "/task", bg: t.selectedRow, ink: t.ink, glyphInk: t.copperLabel },
+      { glyph: "@", label: "Venture mention", key: "/at", bg: "transparent", ink: t.ink, glyphInk: t.magentaLabel },
+      { glyph: "❝", label: "Founder quote", key: "/q", bg: "transparent", ink: t.ink, glyphInk: t.magentaLabel },
+      { glyph: "⚑", label: "Flag for review", key: "/flag", bg: "transparent", ink: t.ink, glyphInk: t.amberInk }
+    ];
+    const ids = [t.copper, "#B3453B", "#B46334", t.amber, "#7E9432", "#43884F", t.teal, "#5E86A3", "#4A6BBE", t.violet, "#8A4576", t.magenta];
+    t.identity = ids.map((c, i) => ({ bg: c, line: "rgba(0,0,0,.12)", ring: i === 6 ? "0 0 0 2px " + t.copper : "none" }));
+    return t;
+  }
+
+  tokenGroups() {
+    const g = (name, rows) => ({ name: name, rows: rows });
+    const r = (token, dark, light, note, flag) => ({ token: token, dark: dark, light: light, note: note, flag: !!flag });
+    return [
+      g("Backgrounds", [
+        r("--root", "#070605", "#EFE8DE", "Page behind the app frame. Sits one step under the canvas, same relationship as dark."),
+        r("--bg", "#0d0a09", "#F7F2EA", "App canvas. Cream, not white — white makes the hairlines disappear."),
+        r("--bg2", "#0a0807", "#F1EBE1", "Chrome bars, rails, strips. In dark it goes darker than the canvas; in light it goes darker too, not lighter."),
+        r("--panel", "#140f0d", "#FFFDF9", "Card rest. Near-white is the raised surface — the elevation direction inverts.", true),
+        r("--panel2", "#1b1411", "#FFFFFF", "Card hover. Only 2 points of separation left above --panel; hover leans on the hairline step and the 2px nudge instead.", true),
+        r("--back-strip", "#100b09", "#F3EDE4", "Level-2 back strip."),
+        r("--hover-row", "#120d0b", "#F2ECE2", "Row / note-block hover wash."),
+        r("--active-row", "#170f0d", "#FBEFE7", "Selected row, current gate column. Copper-tinted so selection reads without a border change."),
+        r("--grid", "#1a1311", "#E7DFD2", "1px column gaps. Must stay darker than both neighbours or the grid vanishes."),
+        r("--divider", "#16100e", "#EDE5D9", "Lightest row divider."),
+        r("--gate-empty", "#2a1e1a", "#D8CDBC", "Uncleared gate segment. At 3px tall a light grey needs more contrast than a mechanical inversion gives.", true),
+        r("--surface-overlay", "— (none)", "#FFFDF9", "New. Dark reuses --panel for menus and modals; light needs a dedicated flat overlay plus a real shadow.", true)
+      ]),
+      g("Hairlines", [
+        r("--line", "#241a17", "#E2D9CB", "Rest hairline."),
+        r("--line2", "#33251f", "#CDC0AE", "Hover / raised hairline. Carries more of the work in light than it does in dark."),
+        r("--focus", "— (none)", "#C6491C + 3px rgba(198,73,28,.20)", "New. Dark shows focus as a 2px copper edge; on light that alone is too quiet, so add the soft outer ring.", true)
+      ]),
+      g("Text", [
+        r("--ink", "#F3EBE6", "#241C17", "Primary. 13.2:1 on --bg."),
+        r("--body-ink", "#d5c8c1", "#332A24", "Note prose at 14.5/1.75."),
+        r("--dim", "#9b8d85", "#6B5F57", "Secondary. 5.9:1 — holds at 11px mono."),
+        r("--faint", "#7d716a", "#857870", "Labels and meta. 4.6:1, the floor. Do not lighten further."),
+        r("--meta-ink", "#cbbdb6", "#4A403A", "Metadata rail."),
+        r("--quote-ink", "#e3d3cc", "#2E241E", "Founder quotes."),
+        r("--ink-disabled", "— (none)", "#9C9086", "New. Dark leans on --ash for disabled; light needs a separate value so disabled ≠ unfiled.", true),
+        r("--ink-inverse", "— (none)", "#FBF7F1", "New. Ink on filled copper/teal buttons and on the dark-mode-only wordmark plate.", true),
+        r("--ash", "#463b36", "#A4968C", "Unfiled / personal / unassigned. As a dot fill it works; as text it fails AA on cream — pair with --dim for labels.", true),
+        r("--ink-ghost", "#3d332e", "#BCAE9F", "Drag handles, hover-only glyphs at rest opacity 0."),
+        r("--ink-ghost2", "#3a2e29", "#C4B7A8", "Placeholder rules and empty checkboxes."),
+        r("--ink-ghost3", "#4d423d", "#B0A292", "Skeleton bars."),
+        r("--figure-ink", "var(--ink)", "#241C17", "Mono tabular figures. Full ink, never dimmed — a number is content."),
+        r("--figure-meta", "var(--dim)", "#4A403A", "Secondary figures in strips and rails.")
+      ]),
+      g("Accents", [
+        r("--copper", "#F26430", "#C6491C", "Primary action, Tech lane, brand mark. Darkened 2 steps for 4.6:1 as text; the button FILL may stay #F26430 with inverse ink.", true),
+        r("--magenta", "#D63A8F", "#AE2470", "GTM lane, quotes, ImmiClaw."),
+        r("--teal", "#2E9E8F", "#17786B", "Capital lane, cleared / done."),
+        r("--violet", "#8B5CF6", "#6636CE", "Task born in a note, Dikkha."),
+        r("--amber", "#F2A93B", "#F2A93B", "Unchanged as a FILL — it is the one warning colour and must keep its hue."),
+        r("--amber-ink", "— (none)", "#8A5A05", "New and unavoidable. #F2A93B text on cream is 1.9:1. Every amber label, late figure and flag needs this darker ink while the fill stays amber.", true)
+      ]),
+      g("Tints and accent labels", [
+        r("--copper-wash", "rgba(242,100,48,.09)", "rgba(198,73,28,.07)", "Active filter chip fill."),
+        r("--copper-tint", "rgba(242,100,48,.14)", "rgba(198,73,28,.11)", "Tints drop 3 points — the same alpha reads heavier on light."),
+        r("--copper-label", "#FFA579", "#A33A11", "Label ink inside a copper tint. Lighter-than-accent in dark becomes darker-than-accent in light — every *-label token flips direction.", true),
+        r("--amber-tint", "rgba(242,169,59,.14)", "rgba(242,169,59,.18)", "Amber alone needs MORE alpha on cream to be visible against it."),
+        r("--amber-tint-strong", "rgba(242,169,59,.16)", "rgba(242,169,59,.26)", "Late / stalled rows."),
+        r("--amber-label", "#F6C77A", "#7A4E04", "Flips direction."),
+        r("--amber-label-strong", "#FFD79B", "#5F3D02", "Flips direction."),
+        r("--teal-tint", "rgba(46,158,143,.14)", "rgba(23,120,107,.11)", ""),
+        r("--teal-tint-strong", "rgba(46,158,143,.16)", "rgba(23,120,107,.15)", ""),
+        r("--teal-label", "#7FE3C0", "#0F5F55", "Flips direction."),
+        r("--magenta-tint", "rgba(214,58,143,.16)", "rgba(174,36,112,.10)", ""),
+        r("--magenta-label", "#F79BC9", "#8E1A5B", "Flips direction."),
+        r("--violet-tint", "rgba(139,92,246,.14)", "rgba(102,54,206,.10)", "/task chips."),
+        r("--violet-label", "— (none)", "#5427B4", "New; dark got away with raw --violet on near-black.", true),
+        r("--on-copper", "#180a04", "#FFF6F1", "Ink on a copper fill. Inverts outright.", true),
+        r("--on-teal", "#04201b", "#F2FBF8", "Inverts outright.", true)
+      ]),
+      g("Semantic states — new family", [
+        r("--success-bg / fg / border", "teal-tint / #7FE3C0 / —", "#E7F4F0 / #0F5F55 / #BFDDD6", "Dark never needed a bordered status box; on light a tint alone is too weak, so each state gets all three.", true),
+        r("--warning-bg / fg / border", "amber-tint / #F6C77A / —", "#FDF2DC / #7A4E04 / #EFD9A6", "Keeps amber's 'look here' job."),
+        r("--danger-bg / fg / border", "— (no danger token)", "#FCEAE4 / #A33A11 / #F0CBBB", "Bench has no red today — late is amber. Decide whether danger becomes a real colour or stays copper-family.", true),
+        r("--info-bg / fg / border", "— (none)", "#EDEFF8 / #33478F / #C9D2EC", "Only cool colour in the system. Sync / calendar notices. Reject it if you would rather keep zero blues.", true)
+      ]),
+      g("Interactive states", [
+        r("--hover-surface", "--panel → --panel2", "--panel → #FFFFFF + --line2", "Lightness range above a near-white card is nearly gone; hover must add the hairline step and the 2px nudge to stay legible.", true),
+        r("--selected-border", "2px --copper", "2px #C6491C", "Unchanged mechanism."),
+        r("--pressed", "— (none)", "— (none)", "No press treatment in dark; keep none."),
+        r("--disabled-bg", "— (none)", "#EFE8DC", "New. Sunken surface + --ink-disabled, no opacity trick on text.", true),
+        r("--selection", "browser default", "rgba(198,73,28,.18)", "Text selection in the editor. Copper at 18% keeps ink readable through it.", true),
+        r("--caret", "browser default", "#C6491C", "Was invisible-by-luck in dark. On light it must be set explicitly.", true),
+        r("--highlight", "amber-tint-strong", "rgba(242,169,59,.34)", "Search hit / inline highlight in notes.")
+      ]),
+      g("Venture header — the one gradient", [
+        r("--venture-wash-opacity", ".17", ".14", "Same construction, lower alpha: a 17% wash on near-white reads louder than on near-black."),
+        r("--venture-wash (per venture)", "linear-gradient(97deg,<c> 0%,transparent 74%)", "same, over --panel at .14", "Unchanged formula, unchanged meaning. Header base becomes the raised surface, not the canvas."),
+        r("--venture-wash (fallback)", "4-colour studio wash", "same at .12", "For ventures with no identity colour set."),
+        r("--venture-rule", "90deg copper→magenta→violet→amber", "same, per-venture solid → transparent", "2px top rule stays; on light it needs the darkened accent value or it reads pastel.", true),
+        r("--venture-sub", "#e3cdc3", "#5C4A42", "Sub-title on the wash."),
+        r("--venture-tag-bg", "rgba(0,0,0,.3)", "rgba(255,255,255,.62)", "Header tags. A black scrim on a light wash goes muddy — invert to a white veil.", true),
+        r("--venture-tag-line", "rgba(255,255,255,.2)", "rgba(36,28,23,.14)", "Inverts."),
+        r("--venture-tag-ink", "#f2e2da", "#3E2A2A", ""),
+        r("--venture-stage-ink", "#f0d9cf", "#3A2A24", ""),
+        r("--venture-stage-meta", "#d0aa99", "#6B554A", ""),
+        r("--venture-steel", "#7BA7C4", "#5E86A3", "Pale identity colours (steel, moss) vanish at a 3px card edge on cream and need darkening — which nudges them out of the mid-saturation band.", true),
+        r("--venture-moss", "#8FA83E", "#7E9432", "Same problem as steel.", true)
+      ]),
+      g("Chrome and depth", [
+        r("--shadow-menu", "0 14px 34px rgba(0,0,0,.6)", "0 10px 26px rgba(60,44,34,.16)", "Warm shadow, not grey. Still the only shadow — plus the panel one below."),
+        r("--shadow-panel", "— (none)", "-14px 0 34px rgba(60,44,34,.12)", "New. A drawer over a light list cannot be read by surface step alone; this is a second shadow the dark system never needed.", true),
+        r("--scrim", "rgba(0,0,0,.5) implied", "rgba(36,28,23,.34)", "Warm ink at 34%, not black — a black scrim on cream looks like a rendering bug.", true),
+        r("--scrollbar-thumb", "#33251f", "#CFC3B4", "Explicit in both modes; the OS default is wrong in one of them."),
+        r("--scrollbar-track", "#0a0807", "#F1EBE1", ""),
+        r("--link", "#F26430", "#C6491C", "Same token, darkened value."),
+        r("--link-hover", "#FFA579", "#A33A11", "Flips direction — hover goes darker, not lighter.", true),
+        r("--code-bg / --code-ink", "— (none)", "#F4EDE2 / #332A24", "New. Code blocks in notes exist today on --panel with no dedicated pair.", true),
+        r("--logo-plate", "n/a (logo on --bg)", "#241C17 plate, 2px radius", "The wordmark is copper/amber on warm black and must never sit on cream. Either ship a dark-ink variant or keep a small dark plate.", true)
+      ])
+    ];
+  }
+
+  checklistData() {
+    const amber = "#F2A93B", copper = "#F26430", teal = "#2E9E8F", violet = "#8B5CF6", magenta = "#D63A8F";
+    return [
+      { kind: "Elevation", edge: copper, title: "Card hover, TaskCard, VentureCard", body: "Dark separates rest and hover with 7 points of lightness. Above a near-white card there is no room left — hover must combine the hairline step with the 2px translateX or it will look inert." },
+      { kind: "Elevation", edge: copper, title: "Panel, Modal, SlashMenu, CommandPalette", body: "All four rely on being lighter than what is behind them. In light they need the new --shadow-panel and a hairline at --line2; the surface step alone reads as nothing." },
+      { kind: "Transparency", edge: magenta, title: "VentureHeader tags", body: "rgba(0,0,0,.3) with a white hairline over the wash. Both invert: white veil, warm-ink hairline. Straight inversion of only one of them is the most likely bug." },
+      { kind: "Transparency", edge: magenta, title: "Every *-tint token", body: "The same alpha reads ~30% heavier on a light ground. Copper, teal, magenta and violet tints all come down; amber alone goes UP because it is close to cream in luminance." },
+      { kind: "Contrast", edge: amber, title: "Amber anything", body: "The single biggest break. 2D LATE, STALE 14D, the flag row, the amber KPI — all fail AA as #F2A93B text on cream. They need --amber-ink for type while the fill stays amber." },
+      { kind: "Contrast", edge: amber, title: "GateBar, stage track, lane dots", body: "3px bars and 5px squares carry meaning with no label. Uncleared segments need a darker grey than a mechanical inversion produces, and pale identity colours (steel, moss) need hand-tuning." },
+      { kind: "Contrast", edge: teal, title: "Chips: stage, filter, source, WhoChip", body: "Tint + light label in dark becomes tint + dark label in light. Every *-label token flips direction — a find-and-replace of hexes will invert the hierarchy and read as disabled." },
+      { kind: "Glow / edge", edge: violet, title: "Focus and selection", body: "Dark shows focus as a bare 2px copper edge that glows against black. On cream it disappears into the hairline; add the 3px soft ring. Text selection and the caret were browser defaults and must both be set." },
+      { kind: "Assets", edge: copper, title: "The wordmark and the app mark", body: "assets/avl-logo.png is copper/amber on transparent — legal on warm black only. Light mode needs either a dark-ink wordmark or a dark plate behind it. The 19px copper A-square is fine as is with inverse ink." }
+    ];
+  }
+
+  renderVals() {
+    const themes = [this.buildTheme(this.themeA()), this.buildTheme(this.themeB()), this.buildTheme(this.themeC())].map(t => {
+      t.swatches = [
+        { label: "Base", value: t.id === "1b" ? "gradient #FBFBFC→#F1F2F5" : (t.id === "1c" ? "#F6F3EE + grain" : "#F7F2EA"), use: "App canvas", bg: t.appBg, border: "none", ink: t.faint, ink2: t.dim },
+        { label: "Raised", value: t.raised, use: "Cards, editor, overlays", bg: t.raised, border: "1px solid " + t.line, ink: t.faint, ink2: t.dim },
+        { label: "Sunken", value: t.id === "1c" ? "#EBE6DE + grain" : (t.id === "1b" ? "#ECEEF1" : "#EFE8DC"), use: "Rails, strips, column beds", bg: t.sunken, border: "none", ink: t.faint, ink2: t.dim },
+        { label: "Hairline", value: t.line + " · " + t.line2, use: "Rest · hover", bg: t.raised, border: "3px solid " + t.line2, ink: t.faint, ink2: t.dim }
+      ];
+      return t;
+    });
+
+    const flaggedOnly = (this.props.tokenFilter ?? "All tokens") !== "All tokens";
+    const showDark = this.props.showDark ?? true;
+    const isColor = v => typeof v === "string" && (v.trim().startsWith("#") || v.trim().startsWith("rgba") || v.trim().startsWith("linear-gradient"));
+    let shown = 0, total = 0;
+    const groups = this.tokenGroups().map(g => {
+      const rows = g.rows.filter(r => { total++; return !flaggedOnly || r.flag; }).map(r => {
+        shown++;
+        return {
+          token: r.token, dark: showDark ? r.dark : "—", light: r.light, note: r.note,
+          flagMark: r.flag ? "⚑" : "",
+          rowBg: r.flag ? "rgba(242,169,59,.05)" : "transparent",
+          noteInk: r.flag ? "#F6C77A" : "#9b8d85",
+          darkSwatch: showDark && isColor(r.dark) ? r.dark : "transparent",
+          lightSwatch: isColor(r.light) ? r.light.split(" + ")[0].split(" / ")[0] : "transparent"
+        };
+      });
+      return { name: g.name, rows: rows };
+    }).filter(g => g.rows.length > 0);
+
+    return {
+      themes: themes, groups: groups, checklist: this.checklistData(),
+      tokenCount: total, shownCount: shown,
+      filterLabel: flaggedOnly ? "needs a decision only" : "all tokens"
+    };
+  }
+}
+</script>
+</body>
+</html>

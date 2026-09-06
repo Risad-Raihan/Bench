@@ -1,21 +1,29 @@
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import {
+  founderHomePath,
+  getCurrentUser,
+  isInternalUser,
+} from "@/lib/auth/current-user";
+import { requestSignInLinkAction } from "@/lib/auth/actions";
 import { interimAuthEnabled } from "@/lib/auth/interim";
 
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; check?: string }>;
 }) {
   const user = await getCurrentUser();
-  if (user) redirect("/");
+  if (user) {
+    redirect(isInternalUser(user) ? "/" : await founderHomePath(user));
+  }
 
   const session = await auth();
-  const { error } = await searchParams;
+  const { error, check } = await searchParams;
   const disabled = Boolean(session?.userId);
   const interim = interimAuthEnabled();
+  const sent = check === "1";
 
   const btn: React.CSSProperties = {
     fontFamily: "var(--font-mono)",
@@ -88,9 +96,8 @@ export default async function SignInPage({
               color: "var(--body-ink)",
             }}
           >
-            {interim
-              ? "Partners sign in with their aponvlab.io email and the password they were given."
-              : "Partners sign in with an aponvlab.io Google account."}
+            Enter the email you were invited with. Partners can also use
+            {interim ? " their password." : " Google."}
           </p>
           {disabled ? (
             <p
@@ -105,6 +112,19 @@ export default async function SignInPage({
             >
               This account is disabled.
             </p>
+          ) : sent ? (
+            <p
+              style={{
+                margin: "0 0 16px",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                letterSpacing: ".14em",
+                textTransform: "uppercase",
+                color: "var(--teal)",
+              }}
+            >
+              Check your email for a sign-in link.
+            </p>
           ) : error ? (
             <p
               style={{
@@ -117,12 +137,30 @@ export default async function SignInPage({
               }}
             >
               {error === "AccessDenied"
-                ? "That Google account is not on the partner list."
+                ? "That account is not allowed to sign in."
                 : error === "CredentialsSignin"
                   ? "Wrong email or password."
                   : "Sign-in failed. Try again."}
             </p>
           ) : null}
+          {disabled ? null : (
+            <form
+              action={requestSignInLinkAction}
+              style={{ display: "grid", gap: 8, marginBottom: 16 }}
+            >
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                autoComplete="username"
+                className="signin-field"
+              />
+              <button type="submit" className="signin-google" style={btn}>
+                Email me a link
+              </button>
+            </form>
+          )}
           {interim ? (
             <form
               action={async (formData: FormData) => {

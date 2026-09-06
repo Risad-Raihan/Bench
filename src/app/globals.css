@@ -54,3 +54,29 @@
   color: var(--copper);
   font-weight: var(--fw-medium);
 }
+.note-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--code-inline-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  padding: 1px 5px;
+}
+.note-prose pre {
+  margin: var(--sp-14) 0 0;
+  margin-left: var(--sp-26);
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  padding: var(--sp-14);
+  overflow-x: auto;
+}
+.note-prose pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--code-ink);
+}
+.note-prose ::selection {
+  background: var(--selection);
+}

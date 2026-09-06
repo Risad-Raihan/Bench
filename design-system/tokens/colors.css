@@ -76,6 +76,50 @@
   --venture-stage-ink:#f0d9cf;
   --venture-stage-meta:#d0aa99;
 
+  /* ── tokens that dark got away with not setting ──
+     Dark mode leaned on browser defaults or reused an existing value for these.
+     Light mode cannot — a black scrim on cream reads as a bug, an unset caret
+     vanishes — so every theme now names them explicitly. */
+  --surface-overlay:var(--panel);   /* menus, modals, drawers — light needs its own flat surface */
+  --ink-disabled:#6b5f57;           /* disabled text — must not equal --ash (unfiled) */
+  --ink-inverse:#F3EBE6;            /* ink on a filled copper/teal button */
+  --amber-ink:var(--amber);         /* amber AS TEXT — fill stays --amber, ink darkens on light */
+  --violet-tint:rgba(139,92,246,.14);
+  --violet-label:#B79BF3;
+  --selection:var(--copper-tint);   /* editor text selection */
+  --caret:var(--copper);            /* editor caret */
+  --highlight:var(--amber-tint-strong); /* search hit / inline highlight in notes */
+  --scrim:rgba(0,0,0,.6);           /* backdrop behind modals and drawers */
+  --code-bg:var(--panel);           /* code block in a note */
+  --code-ink:var(--body-ink);
+  --code-inline-bg:#1c1512;         /* inline `code` background */
+  --scrollbar-thumb:#33251f;
+  --scrollbar-track:#0a0807;
+
+  --venture-tag-bg:rgba(0,0,0,.3);       /* header tag fill — a black veil on the wash */
+  --venture-tag-line:rgba(255,255,255,.2);
+  --venture-stage-strong:#ffffff;        /* the big stage word on the wash */
+
+  /* focus — dark shows a bare 2px copper edge; light adds a soft outer ring */
+  --focus-ring:0 0 0 2px var(--copper);
+
+  /* ── semantic state families ──
+     Dark never needed a bordered status box — a tint alone read fine on near-black.
+     On cream a tint alone is too weak, so each state carries bg + fg + border. */
+  --danger:#C9463C;                 /* Bench's first real red — error, destructive, hard-fail */
+  --danger-bg:rgba(201,70,60,.13);
+  --danger-fg:#E4897F;
+  --danger-line:rgba(201,70,60,.30);
+  --warning-bg:var(--amber-tint);   /* amber keeps its "look here" job */
+  --warning-fg:var(--amber-label);
+  --warning-line:rgba(242,169,59,.30);
+  --success-bg:var(--teal-tint);
+  --success-fg:var(--teal-label);
+  --success-line:rgba(46,158,143,.30);
+  --info-bg:var(--teal-tint);       /* no blue in the system — info reuses teal */
+  --info-fg:var(--teal-label);
+  --info-line:rgba(46,158,143,.30);
+
   /* ── semantic aliases ── */
   --surface-app:var(--bg);
   --surface-chrome:var(--bg2);
@@ -84,9 +128,129 @@
   --text-body:var(--ink);
   --text-secondary:var(--dim);
   --text-meta:var(--faint);
+  --text-disabled:var(--ink-disabled);
   --border-hairline:var(--line);
   --border-hairline-hover:var(--line2);
   --accent-primary:var(--copper);
   --accent-warning:var(--amber);
   --accent-done:var(--teal);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LIGHT MODE — direction 1a, "warm cream, flat"
+   Same token names, one extra layer. Every neutral stays red-shifted exactly as
+   the dark palette is, so a partner switching modes mid-day recognises the same
+   tool. Cream, not white: white makes the hairlines disappear. Surfaces are flat
+   — the one gradient (venture header) is the only exception, re-tuned to a 14%
+   wash. Elevation direction inverts: a raised surface is now the near-white one,
+   so card hover leans on the hairline step + the 2px nudge, not lightness.
+   The server always writes data-theme, defaulting to "light".
+   ───────────────────────────────────────────────────────────────────────────── */
+:root[data-theme="light"]{
+  /* surfaces */
+  --root:#EFE8DE;
+  --bg:#F7F2EA;
+  --bg2:#F1EBE1;
+  --panel:#FFFDF9;        /* card rest — the raised surface */
+  --panel2:#FFFFFF;       /* card hover — 2 points of light left; hairline + nudge carry it */
+  --back-strip:#F3EDE4;
+  --hover-row:#F2ECE2;
+  --active-row:#FBEFE7;   /* copper-tinted so selection reads without a border change */
+  --grid:#E7DFD2;         /* must stay darker than both neighbours or the grid vanishes */
+  --divider:#EDE5D9;
+  --gate-empty:#D8CDBC;   /* 3px bars need more contrast than a mechanical inversion gives */
+
+  /* hairlines — carry more of the separation work in light than in dark */
+  --line:#E2D9CB;
+  --line2:#CDC0AE;
+
+  /* ink */
+  --ink:#241C17;
+  --dim:#6B5F57;
+  --faint:#857870;        /* 4.6:1 on cream — the floor, do not lighten further */
+  --ash:#A4968C;          /* fine as a dot fill; pair with --dim when used as label text */
+  --ink-ghost:#BCAE9F;
+  --ink-ghost2:#C4B7A8;
+  --ink-ghost3:#B0A292;
+  --body-ink:#332A24;
+  --meta-ink:#4A403A;
+  --quote-ink:#2E241E;
+  --ink-disabled:#9C9086;
+  --ink-inverse:#FBF7F1;
+
+  /* accents — darkened for 4.6:1 as text; button FILLS may still use the bright value */
+  --copper:#C6491C;
+  --magenta:#AE2470;
+  --teal:#17786B;
+  --amber:#F2A93B;        /* unchanged as a FILL — the one warning hue */
+  --amber-ink:#8A5A05;    /* amber AS TEXT — #F2A93B on cream is only 1.9:1 */
+  --violet:#6636CE;
+
+  /* venture identity — pale ones (steel, moss) darkened so they survive a 3px edge on cream */
+  --venture-clay:#A85A2E;
+  --venture-steel:#5E86A3;
+  --venture-ember:#B23A31;
+  --venture-moss:#7E9432;
+  --venture-fern:#3F864D;
+  --venture-indigo:#4A6BBE;
+  --venture-plum:#8A4576;
+
+  /* tints — same alpha reads ~30% heavier on cream, so most come DOWN;
+     amber alone goes UP because it sits close to cream in luminance */
+  --copper-wash:rgba(198,73,28,.07);
+  --copper-tint:rgba(198,73,28,.11);
+  --copper-label:#A33A11;      /* label ink now DARKER than the accent — every *-label flips */
+  --amber-tint:rgba(242,169,59,.18);
+  --amber-tint-strong:rgba(242,169,59,.26);
+  --amber-label:#7A4E04;
+  --amber-label-strong:#5F3D02;
+  --teal-tint:rgba(23,120,107,.11);
+  --teal-tint-strong:rgba(23,120,107,.15);
+  --teal-label:#0F5F55;
+  --magenta-tint:rgba(174,36,112,.10);
+  --magenta-label:#8E1A5B;
+  --violet-tint:rgba(102,54,206,.10);
+  --violet-label:#5427B4;
+
+  /* ink on accent fills — inverts outright */
+  --on-copper:#FFF6F1;
+  --on-teal:#F2FBF8;
+
+  /* new-family tokens */
+  --surface-overlay:#FFFDF9;
+  --selection:rgba(198,73,28,.18);
+  --caret:#C6491C;
+  --highlight:rgba(242,169,59,.34);
+  --scrim:rgba(36,28,23,.34);      /* warm ink at 34%, never black */
+  --code-bg:#F4EDE2;
+  --code-ink:#332A24;
+  --code-inline-bg:#F6EFE6;
+  --scrollbar-thumb:#CFC3B4;
+  --scrollbar-track:#F1EBE1;
+  --focus-ring:0 0 0 3px rgba(198,73,28,.20);
+
+  /* venture header */
+  --venture-wash-opacity:.14;      /* a 17% wash reads louder on near-white */
+  --venture-sub:#5C4A42;
+  --venture-tag-ink:#3E2A2A;
+  --venture-tag-bg:rgba(255,255,255,.62);   /* white veil, not a black scrim */
+  --venture-tag-line:rgba(36,28,23,.14);
+  --venture-stage-ink:#3A2A24;
+  --venture-stage-meta:#6B554A;
+  --venture-stage-strong:#2E241E;
+
+  /* semantic state families — bg / fg / border */
+  --danger:#C0311A;
+  --danger-bg:#FCEAE4;
+  --danger-fg:#B23214;
+  --danger-line:#F0CBBB;
+  --warning-bg:#FDF2DC;
+  --warning-fg:#7A4E04;
+  --warning-line:#EFD9A6;
+  --success-bg:#E7F4F0;
+  --success-fg:#0F5F55;
+  --success-line:#BFDDD6;
+  --info-bg:#E7F4F0;
+  --info-fg:#0F5F55;
+  --info-line:#BFDDD6;
 }

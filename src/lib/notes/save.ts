@@ -36,7 +36,7 @@ function mentionLabel(node: TipTapNode): string {
 }
 
 function nodeText(node: TipTapNode): string {
-  if (node.type === "task") return "";
+  if (node.type === "task" || node.type === "decision") return "";
   if (node.type === "mention") return mentionLabel(node);
   if (typeof node.text === "string") return node.text;
   if (!node.content?.length) return "";
@@ -57,6 +57,42 @@ export function flattenToPlainText(doc: unknown): string {
     .map((t) => t.trim())
     .filter(Boolean);
   return blocks.join("\n\n");
+}
+
+function mentionVentureId(node: TipTapNode): string | null {
+  const id = node.attrs?.ventureId;
+  return typeof id === "string" && id ? id : null;
+}
+
+function walkMentions(node: TipTapNode, into: Set<string>) {
+  if (node.type === "mention") {
+    const id = mentionVentureId(node);
+    if (id) into.add(id);
+  }
+  node.content?.forEach((child) => walkMentions(child, into));
+}
+
+/** Unique `@venture` ids in a TipTap doc, in insertion order. */
+export function collectMentionVentureIds(doc: unknown): string[] {
+  const ids = new Set<string>();
+  if (doc && typeof doc === "object") walkMentions(doc as TipTapNode, ids);
+  return [...ids];
+}
+
+/**
+ * Mention ids added/removed between two docs. Used on autosave to reconcile
+ * `note_mentions`. Duplicate mentions of the same venture collapse to one id.
+ */
+export function diffMentions(
+  oldDoc: unknown,
+  newDoc: unknown,
+): { added: string[]; removed: string[] } {
+  const oldIds = new Set(collectMentionVentureIds(oldDoc));
+  const newIds = new Set(collectMentionVentureIds(newDoc));
+  return {
+    added: [...newIds].filter((id) => !oldIds.has(id)),
+    removed: [...oldIds].filter((id) => !newIds.has(id)),
+  };
 }
 
 export function asEditorDoc(content: unknown): TipTapNode {

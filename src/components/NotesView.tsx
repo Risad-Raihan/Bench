@@ -33,6 +33,7 @@ export type NotesViewActive = {
   title: string;
   content: unknown;
   ventureId: string | null;
+  ventureSlug: string | null;
   ventureName: string | null;
   ventureColor: string | null;
   lastEditedByName: string | null;
@@ -43,9 +44,11 @@ export type NotesViewActive = {
 export function NotesView({
   notes,
   active,
+  ventures,
 }: {
   notes: NotesViewItem[];
   active: NotesViewActive | null;
+  ventures: { id: string; name: string; color: string | null }[];
 }) {
   const router = useRouter();
   const editorRef = useRef<NoteBodyHandle>(null);
@@ -125,6 +128,7 @@ export function NotesView({
           key={active.id}
           active={active}
           editorRef={editorRef}
+          ventures={ventures}
           onTitle={(title) =>
             setTitleOverrides((o) => ({ ...o, [active.id]: title }))
           }
@@ -172,10 +176,12 @@ export function NotesView({
 function ActiveNote({
   active,
   editorRef,
+  ventures,
   onTitle,
 }: {
   active: NotesViewActive;
   editorRef: RefObject<NoteBodyHandle | null>;
+  ventures: { id: string; name: string; color: string | null }[];
   onTitle: (title: string) => void;
 }) {
   const [title, setTitle] = useState(active.title);
@@ -251,6 +257,9 @@ function ActiveNote({
           noteId={active.id}
           content={active.content}
           title={title}
+          ventureId={active.ventureId}
+          ventureSlug={active.ventureSlug}
+          ventures={ventures}
           onSaved={({ lastEditedByName }) => {
             if (lastEditedByName) setBylineName(lastEditedByName);
             setBylineAt(new Date().toISOString());

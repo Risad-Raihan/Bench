@@ -32,7 +32,7 @@ export type MutateOpts = {
 };
 
 export type CreateTaskInput = {
-  ventureId: string;
+  ventureId: string | null;
   title: string;
   lane: Lane;
   status?: TaskStatus;
@@ -40,6 +40,7 @@ export type CreateTaskInput = {
   assigneeId?: string | null;
   dueDate?: string | null;
   description?: string | null;
+  originNoteId?: string | null;
 };
 
 export type EditTaskInput = {
@@ -81,7 +82,7 @@ function completedAtFor(
 
 async function positionInCell(
   input: ReorderTaskInput,
-  ventureId: string,
+  ventureId: string | null,
   executor: Executor | undefined,
 ): Promise<{ position: number; cell: { id: string; position: number }[] }> {
   const cell = await listCellTasks(
@@ -145,8 +146,10 @@ export async function createTask(input: CreateTaskInput, opts: MutateOpts) {
   const status = input.status ? requireBoardStatus(input.status) : "todo";
   const executor = opts.executor;
 
-  const venture = await getVentureById(input.ventureId, executor);
-  if (!venture) throw new Error("venture not found");
+  if (input.ventureId) {
+    const venture = await getVentureById(input.ventureId, executor);
+    if (!venture) throw new Error("venture not found");
+  }
 
   const cell = await listCellTasks(
     { ventureId: input.ventureId, lane, status },
@@ -168,6 +171,7 @@ export async function createTask(input: CreateTaskInput, opts: MutateOpts) {
       dueDate: input.dueDate ?? null,
       createdBy: opts.actorId,
       completedAt: completedAtFor(status, null),
+      originNoteId: input.originNoteId ?? null,
     },
     executor,
   );
@@ -189,7 +193,7 @@ export async function createTask(input: CreateTaskInput, opts: MutateOpts) {
 export async function editTask(input: EditTaskInput, opts: MutateOpts) {
   const executor = opts.executor;
   const previous = await getTask(input.taskId, executor);
-  if (!previous || !previous.ventureId) throw new Error("task not found");
+  if (!previous) throw new Error("task not found");
 
   const title = input.title !== undefined ? input.title.trim() : previous.title;
   if (!title) throw new Error("title is required");
@@ -235,7 +239,7 @@ export async function assignTask(
 ) {
   const executor = opts.executor;
   const previous = await getTask(input.taskId, executor);
-  if (!previous || !previous.ventureId) throw new Error("task not found");
+  if (!previous) throw new Error("task not found");
 
   const row = await updateTaskRow(
     input.taskId,
@@ -263,7 +267,7 @@ export async function setTaskDueDate(
 ) {
   const executor = opts.executor;
   const previous = await getTask(input.taskId, executor);
-  if (!previous || !previous.ventureId) throw new Error("task not found");
+  if (!previous) throw new Error("task not found");
 
   const row = await updateTaskRow(
     input.taskId,
@@ -291,7 +295,7 @@ export async function changeTaskStatus(
 ) {
   const status = requireBoardStatus(input.status);
   const previous = await getTask(input.taskId, opts.executor);
-  if (!previous || !previous.ventureId) throw new Error("task not found");
+  if (!previous) throw new Error("task not found");
   if (previous.status === status) return previous;
 
   return reorderTask(
@@ -305,7 +309,7 @@ export async function reorderTask(input: ReorderTaskInput, opts: MutateOpts) {
   const status = requireBoardStatus(input.status);
   const executor = opts.executor;
   const previous = await getTask(input.taskId, executor);
-  if (!previous || !previous.ventureId) throw new Error("task not found");
+  if (!previous) throw new Error("task not found");
 
   const { position, cell } = await positionInCell(
     { ...input, lane, status },

@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { Extension, type Editor, type Range } from "@tiptap/core";
 import { ReactRenderer } from "@tiptap/react";
 import Suggestion, {
@@ -16,6 +14,11 @@ import {
   useState,
 } from "react";
 import { SlashMenu } from "../../../design-system/components/notes/NoteEditor.jsx";
+import {
+  createDecisionFromNoteAction,
+  createTaskFromNoteAction,
+} from "@/lib/notes/actions";
+import { BOARD_LANES, type Lane } from "@/lib/lanes";
 
 export type SlashItem = {
   glyph: string;
@@ -24,22 +27,75 @@ export type SlashItem = {
   apply: (opts: { editor: Editor; range: Range }) => void;
 };
 
-export const SLASH_ITEMS: SlashItem[] = [
-  {
-    glyph: "#",
-    label: "Heading",
+type CaptureOpts = {
+  noteId: string;
+};
+
+function captureItems(opts: CaptureOpts): SlashItem[] {
+  const taskItems: SlashItem[] = BOARD_LANES.map((lane) => ({
+    glyph: "☑",
+    label: `Task · ${lane.label}`,
+    hint: "creates a card",
     apply: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).setHeading({ level: 2 }).run();
+      void (async () => {
+        editor.chain().focus().deleteRange(range).run();
+        const result = await createTaskFromNoteAction({
+          noteId: opts.noteId,
+          lane: lane.key as Lane,
+        });
+        if (!result.ok) return;
+        editor
+          .chain()
+          .focus()
+          .insertContent([
+            { type: "task", attrs: { taskId: result.id } },
+            { type: "paragraph" },
+          ])
+          .run();
+      })();
     },
-  },
-  {
-    glyph: "❝",
-    label: "Quote",
-    apply: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).toggleBlockquote().run();
+  }));
+
+  return [
+    ...taskItems,
+    {
+      glyph: "⚑",
+      label: "Decision",
+      hint: "logs it",
+      apply: ({ editor, range }) => {
+        void (async () => {
+          editor.chain().focus().deleteRange(range).run();
+          const result = await createDecisionFromNoteAction({
+            noteId: opts.noteId,
+          });
+          if (!result.ok) return;
+          editor
+            .chain()
+            .focus()
+            .insertContent([
+              { type: "decision", attrs: { decisionId: result.id } },
+              { type: "paragraph" },
+            ])
+            .run();
+        })();
+      },
     },
-  },
-];
+    {
+      glyph: "#",
+      label: "Heading",
+      apply: ({ editor, range }) => {
+        editor.chain().focus().deleteRange(range).setHeading({ level: 2 }).run();
+      },
+    },
+    {
+      glyph: "❝",
+      label: "Quote",
+      apply: ({ editor, range }) => {
+        editor.chain().focus().deleteRange(range).toggleBlockquote().run();
+      },
+    },
+  ];
+}
 
 type MenuHandle = {
   onKeyDown: (props: SuggestionKeyDownProps) => boolean;
@@ -90,11 +146,6 @@ const SlashCommandMenu = forwardRef<
   );
 });
 
-function filterItems(query: string): SlashItem[] {
-  const q = query.toLowerCase();
-  return SLASH_ITEMS.filter((item) => item.label.toLowerCase().includes(q));
-}
-
 function renderSlashMenu(): ReturnType<
   NonNullable<SuggestionOptions<SlashItem, SlashItem>["render"]>
 > {
@@ -134,9 +185,21 @@ export const SlashCommand = Extension.create({
 
   addOptions() {
     return {
-      suggestion: {
+      noteId: "",
+    };
+  },
+
+  addProseMirrorPlugins() {
+    const noteId = this.options.noteId as string;
+    const items = captureItems({ noteId });
+    return [
+      Suggestion({
+        editor: this.editor,
         char: "/",
-        items: ({ query }: { query: string }) => filterItems(query),
+        items: ({ query }: { query: string }) => {
+          const q = query.toLowerCase();
+          return items.filter((item) => item.label.toLowerCase().includes(q));
+        },
         command: ({
           editor,
           range,
@@ -149,15 +212,6 @@ export const SlashCommand = Extension.create({
           props.apply({ editor, range });
         },
         render: renderSlashMenu,
-      },
-    };
-  },
-
-  addProseMirrorPlugins() {
-    return [
-      Suggestion({
-        editor: this.editor,
-        ...this.options.suggestion,
       }),
     ];
   },

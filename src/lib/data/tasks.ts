@@ -44,7 +44,7 @@ export type AssignablePartner = {
 };
 
 export type InsertTaskValues = {
-  ventureId: string;
+  ventureId: string | null;
   title: string;
   description?: string | null;
   lane: Lane;
@@ -55,6 +55,15 @@ export type InsertTaskValues = {
   dueDate?: string | null;
   createdBy?: string | null;
   completedAt?: Date | null;
+  originNoteId?: string | null;
+};
+
+export type TaskBlockData = {
+  id: string;
+  title: string;
+  lane: Lane;
+  status: TaskStatus;
+  assigneeInitials: string | null;
 };
 
 export type TaskPatch = {
@@ -148,9 +157,29 @@ export async function getTask(
   return row ?? null;
 }
 
+export async function getTaskBlock(
+  taskId: string,
+  executor?: Executor,
+): Promise<TaskBlockData | null> {
+  const run = executor ?? db;
+  const [row] = await run
+    .select({
+      id: tasks.id,
+      title: tasks.title,
+      lane: tasks.lane,
+      status: tasks.status,
+      assigneeInitials: users.initials,
+    })
+    .from(tasks)
+    .leftJoin(users, eq(tasks.assigneeId, users.id))
+    .where(eq(tasks.id, taskId))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function listCellTasks(
   args: {
-    ventureId: string;
+    ventureId: string | null;
     lane: Lane;
     status: TaskStatus;
     excludeId?: string;
@@ -159,7 +188,9 @@ export async function listCellTasks(
 ): Promise<CellTask[]> {
   const run = executor ?? db;
   const where = [
-    eq(tasks.ventureId, args.ventureId),
+    args.ventureId == null
+      ? isNull(tasks.ventureId)
+      : eq(tasks.ventureId, args.ventureId),
     eq(tasks.lane, args.lane),
     eq(tasks.status, args.status),
     isNull(tasks.archivedAt),
@@ -194,6 +225,7 @@ export async function insertTask(
       dueDate: values.dueDate ?? null,
       createdBy: values.createdBy ?? null,
       completedAt: values.completedAt ?? null,
+      originNoteId: values.originNoteId ?? null,
     })
     .returning();
   if (!row) throw new Error("task insert returned no row");

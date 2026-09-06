@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { flattenToPlainText, shouldSnapshot } from "./save";
+import { diffMentions, flattenToPlainText, shouldSnapshot } from "./save";
 
 const MIN = 60_000;
 
@@ -15,7 +15,7 @@ const doc = {
       type: "paragraph",
       content: [
         { type: "text", text: "Talked with " },
-        { type: "mention", attrs: { id: "v-immi", label: "ImmiClaw" } },
+        { type: "mention", attrs: { ventureId: "v-immi", label: "ImmiClaw" } },
         { type: "text", text: " about exclusivity." },
       ],
     },
@@ -111,5 +111,74 @@ describe("shouldSnapshot", () => {
         now,
       }),
     ).toBe(false);
+  });
+});
+
+describe("diffMentions", () => {
+  const immi = {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          { type: "mention", attrs: { ventureId: "v-immi", label: "ImmiClaw" } },
+        ],
+      },
+    ],
+  };
+  const immiAndDikkha = {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          { type: "mention", attrs: { ventureId: "v-immi", label: "ImmiClaw" } },
+          { type: "text", text: " and " },
+          {
+            type: "mention",
+            attrs: { ventureId: "v-dikkha", label: "Dikkha AI" },
+          },
+        ],
+      },
+    ],
+  };
+  const dikkha = {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "mention",
+            attrs: { ventureId: "v-dikkha", label: "Dikkha AI" },
+          },
+        ],
+      },
+    ],
+  };
+
+  test("returns added venture ids when a mention is inserted", () => {
+    expect(diffMentions(immi, immiAndDikkha)).toEqual({
+      added: ["v-dikkha"],
+      removed: [],
+    });
+  });
+
+  test("returns removed venture ids when a mention is edited out", () => {
+    expect(diffMentions(immiAndDikkha, immi)).toEqual({
+      added: [],
+      removed: ["v-dikkha"],
+    });
+  });
+
+  test("returns empty add and remove sets when mentions are unchanged", () => {
+    expect(diffMentions(immiAndDikkha, immiAndDikkha)).toEqual({
+      added: [],
+      removed: [],
+    });
+    expect(diffMentions(immi, dikkha)).toEqual({
+      added: ["v-dikkha"],
+      removed: ["v-immi"],
+    });
   });
 });

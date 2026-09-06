@@ -9,7 +9,7 @@ import {
   VentureTabs,
 } from "../../design-system/components/venture/VentureHeader.jsx";
 import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
-import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
+import { ActionButton, DecisionRow } from "../../design-system/components/decisions/DecisionRow.jsx";
 import { PageContainer } from "@/components/PageContainer";
 import {
   TasksBoard,
@@ -98,6 +98,8 @@ export function VentureView({
   ventureId,
   partners,
   notes,
+  mentionedNotes,
+  decisions,
 }: {
   slug: string;
   name: string;
@@ -113,6 +115,16 @@ export function VentureView({
   ventureId: string;
   partners: AssignablePartner[];
   notes: { id: string; title: string }[];
+  mentionedNotes?: { id: string; title: string }[];
+  decisions?: {
+    id: string;
+    title: string;
+    date: string;
+    who: string;
+    source?: string;
+    rationale?: string | null;
+    sourceNoteId?: string | null;
+  }[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("Overview");
@@ -220,6 +232,12 @@ export function VentureView({
           color={color}
           ventureId={ventureId}
           notes={notes}
+          mentioned={mentionedNotes ?? []}
+        />
+      ) : tab === "Decisions" ? (
+        <VentureDecisionsList
+          decisions={decisions ?? []}
+          onOpenSource={(noteId) => router.push(`/notes?n=${noteId}`)}
         />
       ) : (
         <PageContainer>
@@ -278,11 +296,13 @@ function VentureNotesList({
   color,
   ventureId,
   notes,
+  mentioned,
 }: {
   slug: string;
   color: string;
   ventureId: string;
   notes: { id: string; title: string }[];
+  mentioned: { id: string; title: string }[];
 }) {
   const router = useRouter();
 
@@ -291,7 +311,7 @@ function VentureNotesList({
     if (result.ok) router.push(`/notes?n=${result.id}`);
   }
 
-  if (notes.length === 0) {
+  if (notes.length === 0 && mentioned.length === 0) {
     return (
       <PageContainer>
         <EmptyState
@@ -310,12 +330,91 @@ function VentureNotesList({
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 11 }}>
         <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
       </div>
+      {notes.length > 0 && mentioned.length > 0 && (
+        <NoteGroupHeader>Owned</NoteGroupHeader>
+      )}
       {notes.map((note) => (
         <VentureNoteRow
           key={note.id}
           title={note.title}
           color={color}
           onOpen={() => router.push(`/notes?n=${note.id}`)}
+        />
+      ))}
+      {mentioned.length > 0 && <NoteGroupHeader>Mentioned</NoteGroupHeader>}
+      {mentioned.map((note) => (
+        <VentureNoteRow
+          key={note.id}
+          title={note.title}
+          color={color}
+          onOpen={() => router.push(`/notes?n=${note.id}`)}
+        />
+      ))}
+    </PageContainer>
+  );
+}
+
+function NoteGroupHeader({ children }: { children: string }) {
+  return (
+    <div
+      style={{
+        fontFamily: "var(--font-mono)",
+        fontSize: "var(--fs-11)",
+        letterSpacing: "var(--ls-mono-caps-wide)",
+        textTransform: "uppercase",
+        color: "var(--faint)",
+        padding: "12px 22px 7px",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function VentureDecisionsList({
+  decisions,
+  onOpenSource,
+}: {
+  decisions: {
+    id: string;
+    title: string;
+    date: string;
+    who: string;
+    source?: string;
+    rationale?: string | null;
+    sourceNoteId?: string | null;
+  }[];
+  onOpenSource: (noteId: string) => void;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  if (decisions.length === 0) {
+    return (
+      <PageContainer>
+        <EmptyState hint="Decisions made for this venture will appear here.">
+          No decisions yet
+        </EmptyState>
+      </PageContainer>
+    );
+  }
+
+  return (
+    <PageContainer>
+      {decisions.map((row) => (
+        <DecisionRow
+          key={row.id}
+          decision={row.title}
+          date={row.date}
+          who={row.who}
+          source={row.source}
+          rationale={row.rationale ?? undefined}
+          expanded={openId === row.id}
+          onToggle={() => setOpenId((id) => (id === row.id ? null : row.id))}
+          onOpenSource={
+            row.sourceNoteId
+              ? () => onOpenSource(row.sourceNoteId as string)
+              : undefined
+          }
         />
       ))}
     </PageContainer>

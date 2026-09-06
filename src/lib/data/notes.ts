@@ -2,9 +2,19 @@
  * Founder-reachable note reads and partner writes. Pages never touch `db`
  * (ADR-0006). Founder visibility filter (`shared` only) lands in S14.
  */
-import { and, count, desc, eq, isNull } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 import { db } from "@/db";
-import { notes, noteVersions, users, ventures, type visibility } from "@/db/schema";
+import {
+  decisions,
+  noteMentions,
+  notes,
+  noteVersions,
+  tasks,
+  users,
+  ventures,
+  type visibility,
+} from "@/db/schema";
+import { recordActivity } from "@/lib/data/activity";
 import {
   isInternalUser,
   type CurrentUser,
@@ -13,6 +23,7 @@ import {
 import {
   EMPTY_DOC,
   asEditorDoc,
+  diffMentions,
   flattenToPlainText,
   shouldSnapshot,
 } from "@/lib/notes/save";
@@ -47,6 +58,7 @@ export type PartnerNoteDetail = PartnerNote & {
   lastEditedByInitials: string | null;
   ventureName: string | null;
   ventureColor: string | null;
+  ventureSlug: string | null;
   versionCount: number;
 };
 
@@ -132,6 +144,7 @@ export async function getNoteById(
       lastEditedByInitials: users.initials,
       ventureName: ventures.name,
       ventureColor: ventures.color,
+      ventureSlug: ventures.slug,
     })
     .from(notes)
     .leftJoin(users, eq(notes.lastEditedBy, users.id))
@@ -146,6 +159,26 @@ export async function getNoteById(
     .where(eq(noteVersions.noteId, noteId));
 
   return { ...row, versionCount: versions?.n ?? 0 };
+}
+
+export async function listMentionedNotes(
+  user: CurrentUser,
+  ventureId: string,
+  executor: Executor = db,
+): Promise<PartnerNote[]> {
+  if (!isInternalUser(user)) return [];
+  return executor
+    .select(listColumns)
+    .from(notes)
+    .innerJoin(noteMentions, eq(noteMentions.noteId, notes.id))
+    .where(
+      and(
+        eq(noteMentions.ventureId, ventureId),
+        isNull(notes.archivedAt),
+        or(isNull(notes.ventureId), ne(notes.ventureId, ventureId)),
+      ),
+    )
+    .orderBy(desc(notes.updatedAt));
 }
 
 export async function countNotes(
@@ -260,6 +293,34 @@ export async function saveNote(
     });
   if (!updated) return null;
 
+  const { added, removed } = diffMentions(existing.content, content);
+  if (removed.length > 0) {
+    await executor
+      .delete(noteMentions)
+      .where(
+        and(
+          eq(noteMentions.noteId, input.noteId),
+          inArray(noteMentions.ventureId, removed),
+        ),
+      );
+  }
+  for (const ventureId of added) {
+    await executor
+      .insert(noteMentions)
+      .values({ noteId: input.noteId, ventureId })
+      .onConflictDoNothing();
+    await recordActivity(
+      {
+        verb: "mentioned",
+        entity: "note",
+        entityId: input.noteId,
+        ventureId,
+        actorId: user.id,
+      },
+      executor,
+    );
+  }
+
   const [latest] = await executor
     .select({ createdAt: noteVersions.createdAt })
     .from(noteVersions)
@@ -293,4 +354,29 @@ export async function saveNote(
     lastEditedByName: editor?.name ?? null,
     snapshotted,
   };
+}
+
+export async function archiveNote(
+  user: CurrentUser,
+  noteId: string,
+  executor: Executor = db,
+): Promise<{ id: string } | null> {
+  if (!isInternalUser(user)) return null;
+  const [row] = await executor
+    .update(notes)
+    .set({ archivedAt: new Date() })
+    .where(and(eq(notes.id, noteId), isNull(notes.archivedAt)))
+    .returning({ id: notes.id });
+  if (!row) return null;
+
+  await executor
+    .update(tasks)
+    .set({ originNoteId: null })
+    .where(eq(tasks.originNoteId, noteId));
+  await executor
+    .update(decisions)
+    .set({ sourceNoteId: null })
+    .where(eq(decisions.sourceNoteId, noteId));
+  await executor.delete(noteMentions).where(eq(noteMentions.noteId, noteId));
+  return row;
 }

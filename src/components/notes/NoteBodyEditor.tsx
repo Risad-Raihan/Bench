@@ -8,10 +8,33 @@ import {
   useRef,
 } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { asEditorDoc } from "@/lib/notes/save";
 import { saveNoteAction } from "@/lib/notes/actions";
+import { DecisionNode } from "./decision-node";
+import { VentureMention } from "./mention";
 import { SlashCommand } from "./slash-command";
+import { TaskNode } from "./task-node";
+import type { MentionableVenture } from "./capture-context";
+
+const NoteCaptureStorage = Extension.create({
+  name: "noteCapture",
+  addOptions() {
+    return {
+      noteId: "",
+      ventureId: null as string | null,
+      ventureSlug: null as string | null,
+    };
+  },
+  addStorage() {
+    return {
+      noteId: this.options.noteId,
+      ventureId: this.options.ventureId,
+      ventureSlug: this.options.ventureSlug,
+    };
+  },
+});
 
 const AUTOSAVE_MS = 2000;
 
@@ -25,9 +48,15 @@ export const NoteBodyEditor = forwardRef<
     noteId: string;
     content: unknown;
     title: string;
+    ventureId?: string | null;
+    ventureSlug?: string | null;
+    ventures?: MentionableVenture[];
     onSaved?: (info: { lastEditedByName: string | null }) => void;
   }
->(function NoteBodyEditor({ noteId, content, title, onSaved }, ref) {
+>(function NoteBodyEditor(
+  { noteId, content, title, ventureId = null, ventureSlug = null, ventures = [], onSaved },
+  ref,
+) {
   const titleRef = useRef(title);
   const dirtyRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -67,7 +96,14 @@ export const NoteBodyEditor = forwardRef<
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [StarterKit, SlashCommand],
+    extensions: [
+      StarterKit,
+      NoteCaptureStorage.configure({ noteId, ventureId, ventureSlug }),
+      TaskNode,
+      DecisionNode,
+      VentureMention.configure({ ventures }),
+      SlashCommand.configure({ noteId }),
+    ],
     content: asEditorDoc(content),
     editorProps: {
       attributes: { class: "note-prose" },

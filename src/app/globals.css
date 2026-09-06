@@ -47,3 +47,10 @@
   float: left;
   height: 0;
 }
+.note-prose .note-embed {
+  padding-left: 0;
+}
+.note-prose .note-mention {
+  color: var(--copper);
+  font-weight: var(--fw-medium);
+}

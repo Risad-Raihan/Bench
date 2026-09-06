@@ -62,3 +62,25 @@ export function groupNotesIndex(
 
   return { pinned, byVenture, unfiled };
 }
+
+export type VentureNoteListItem = {
+  id: string;
+  title: string;
+};
+
+/**
+ * Venture Notes tab: owned notes vs notes that `@`-mention this venture.
+ * A note owned by the venture never appears under Mentioned, even if it
+ * also mentions itself.
+ */
+export function groupVentureNotes(args: {
+  owned: VentureNoteListItem[];
+  mentioned: VentureNoteListItem[];
+}): { owned: VentureNoteListItem[]; mentioned: VentureNoteListItem[] } {
+  const ownedIds = new Set(args.owned.map((n) => n.id));
+  return {
+    owned: args.owned,
+    mentioned: args.mentioned.filter((n) => !ownedIds.has(n.id)),
+  };
+}
+

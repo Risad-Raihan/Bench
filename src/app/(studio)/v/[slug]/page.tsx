@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { requirePartner } from "@/lib/auth/current-user";
-import { countDecisions } from "@/lib/data/decisions";
 import { countDocs } from "@/lib/data/docs";
-import { listNotes } from "@/lib/data/notes";
+import { listDecisions } from "@/lib/data/decisions";
+import { listMentionedNotes, listNotes } from "@/lib/data/notes";
 import {
   countEvents,
   getVenture,
@@ -15,6 +15,7 @@ import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
 import { BOARD_COLUMNS, BOARD_LANES } from "@/lib/lanes";
 import { formatDayMonth, formatDueDate } from "@/lib/format";
+import { groupVentureNotes } from "@/lib/notes/groups";
 import { listAssignablePartners } from "@/lib/data/tasks";
 import {
   VentureView,
@@ -37,7 +38,7 @@ export default async function VenturePage({
   const color = ventureColor(venture.color);
   const currentStageIndex = STAGES.findIndex((s) => s.stage === venture.stage);
 
-  const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, noteRows, eventsCount, decisionsCount, partners] =
+  const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, noteRows, mentionedRows, eventsCount, decisionRows, partners] =
     await Promise.all([
       listSwitchTargets(user, venture.id),
       listGateItems(user, [venture.id]),
@@ -45,8 +46,9 @@ export default async function VenturePage({
       listVentureTasks(user, venture.id),
       countDocs(user, venture.id),
       listNotes(user, venture.id),
+      listMentionedNotes(user, venture.id),
       countEvents(user, venture.id),
-      countDecisions(user, venture.id),
+      listDecisions(user, venture.id),
       listAssignablePartners(user),
     ]);
 
@@ -121,13 +123,18 @@ export default async function VenturePage({
     };
   });
 
+  const groupedNotes = groupVentureNotes({
+    owned: noteRows.map((n) => ({ id: n.id, title: n.title })),
+    mentioned: mentionedRows.map((n) => ({ id: n.id, title: n.title })),
+  });
+
   const tabs = [
     { label: "Overview" },
     { label: "Docs", count: docsCount },
-    { label: "Notes", count: noteRows.length },
+    { label: "Notes", count: groupedNotes.owned.length + groupedNotes.mentioned.length },
     { label: "Tasks", count: taskRows.length },
     { label: "Calendar", count: eventsCount },
-    { label: "Decisions", count: decisionsCount },
+    { label: "Decisions", count: decisionRows.length },
   ];
 
   return (
@@ -153,7 +160,17 @@ export default async function VenturePage({
       lanes={lanes}
       ventureId={venture.id}
       partners={partners}
-      notes={noteRows.map((n) => ({ id: n.id, title: n.title }))}
+      notes={groupedNotes.owned}
+      mentionedNotes={groupedNotes.mentioned}
+      decisions={decisionRows.map((d) => ({
+        id: d.id,
+        title: d.title,
+        date: formatDueDate(d.decidedAt),
+        who: d.decidedByInitials ?? "—",
+        source: d.sourceNoteTitle ?? undefined,
+        rationale: d.rationale,
+        sourceNoteId: d.sourceNoteId,
+      }))}
     />
   );
 }

@@ -27,6 +27,14 @@ export async function truncateActivityGraph(
   );
 }
 
+export async function truncateNoteCaptureGraph(
+  executor: ReturnType<typeof getTestDb>,
+) {
+  await executor.execute(
+    sql`TRUNCATE TABLE notifications, activity, note_mentions, note_versions, decisions, tasks, notes, ventures, users RESTART IDENTITY CASCADE`,
+  );
+}
+
 export async function truncateVentureBirthGraph(
   executor: ReturnType<typeof getTestDb>,
 ) {

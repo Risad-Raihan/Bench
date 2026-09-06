@@ -13,6 +13,7 @@ import { ActionButton, DecisionRow } from "../../design-system/components/decisi
 import { ChecklistRow } from "../../design-system/components/data/FactRow.jsx";
 import { PageContainer } from "@/components/PageContainer";
 import { MoveStageModal } from "@/components/MoveStageModal";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import {
   TasksBoard,
   type AssignablePartner,
@@ -25,6 +26,7 @@ import { reasonRequired } from "@/lib/stages/reason";
 import { STAGES, stageLabel as labelForStage, type Stage } from "@/lib/pipeline-stages";
 import type { Priority } from "@/lib/data/tasks";
 import type { Lane, TaskStatus } from "@/lib/lanes";
+import type { ActivityRowView } from "@/lib/activity/view";
 
 export interface VentureTaskCardData {
   id: string;
@@ -95,6 +97,10 @@ const EMPTY_STATE_COPY: Record<string, { label: string; hint: string }> = {
     label: "No decisions yet",
     hint: "Decisions made for this venture will appear here.",
   },
+  Activity: {
+    label: "No activity yet",
+    hint: "Actions on this venture will appear here.",
+  },
 };
 
 export function VentureView({
@@ -118,6 +124,7 @@ export function VentureView({
   mentionedNotes,
   decisions,
   docs,
+  activity,
 }: {
   slug: string;
   name: string;
@@ -147,6 +154,7 @@ export function VentureView({
     sourceNoteId?: string | null;
   }[];
   docs?: DocsTabFile[];
+  activity?: ActivityRowView[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("Overview");
@@ -301,6 +309,14 @@ export function VentureView({
           decisions={decisions ?? []}
           onOpenSource={(noteId) => router.push(`/notes?n=${noteId}`)}
         />
+      ) : tab === "Activity" ? (
+        <PageContainer>
+          <ActivityFeed
+            items={activity ?? []}
+            emptyLabel="No activity yet"
+            emptyHint="Actions on this venture will appear here."
+          />
+        </PageContainer>
       ) : tab === "Overview" && checklist.length > 0 ? (
         <OverviewGates
           slug={slug}

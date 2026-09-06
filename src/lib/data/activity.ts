@@ -30,72 +30,172 @@ type Entity = (typeof entityType.enumValues)[number];
 export type PartnerActivity = {
   id: string;
   actorId: string | null;
+  actorInitials: string | null;
+  actorName: string | null;
   verb: string;
   entity: Entity;
   entityId: string;
   ventureId: string | null;
+  ventureName: string | null;
+  ventureColor: string | null;
+  ventureSlug: string | null;
   payload: Record<string, unknown> | null;
   createdAt: Date;
 };
 
 export type FounderActivity = Omit<PartnerActivity, "payload">;
 
+export type PartnerNotification = {
+  id: string;
+  activityId: string;
+  readAt: Date | null;
+  createdAt: Date;
+  actorId: string | null;
+  actorInitials: string | null;
+  actorName: string | null;
+  verb: string;
+  entity: Entity;
+  entityId: string;
+  ventureId: string | null;
+  ventureName: string | null;
+  ventureColor: string | null;
+  ventureSlug: string | null;
+  payload: Record<string, unknown> | null;
+};
+
+const feedColumns = {
+  id: activity.id,
+  actorId: activity.actorId,
+  actorInitials: users.initials,
+  actorName: users.name,
+  verb: activity.verb,
+  entity: activity.entity,
+  entityId: activity.entityId,
+  ventureId: activity.ventureId,
+  ventureName: ventures.name,
+  ventureColor: ventures.color,
+  ventureSlug: ventures.slug,
+  payload: activity.payload,
+  createdAt: activity.createdAt,
+};
+
+// Feeds and the inbox dropdown are recent-history surfaces, not archives.
+const FEED_LIMIT = 100;
+const INBOX_LIMIT = 50;
+
 export async function listVentureActivity(
   user: InternalUser,
   ventureId: string,
+  executor?: Executor,
 ): Promise<PartnerActivity[]>;
 export async function listVentureActivity(
   user: CurrentUser,
   ventureId: string,
+  executor?: Executor,
 ): Promise<PartnerActivity[] | FounderActivity[]>;
 export async function listVentureActivity(
   user: CurrentUser,
   ventureId: string,
+  executor: Executor = db,
 ): Promise<PartnerActivity[] | FounderActivity[]> {
   if (!isInternalUser(user)) {
     // S14: allow-listed verbs only, scoped to user.ventureIds.
     void ventureId;
     return [];
   }
-  return db
-    .select({
-      id: activity.id,
-      actorId: activity.actorId,
-      verb: activity.verb,
-      entity: activity.entity,
-      entityId: activity.entityId,
-      ventureId: activity.ventureId,
-      payload: activity.payload,
-      createdAt: activity.createdAt,
-    })
+  return executor
+    .select(feedColumns)
     .from(activity)
+    .leftJoin(users, eq(activity.actorId, users.id))
+    .leftJoin(ventures, eq(activity.ventureId, ventures.id))
     .where(eq(activity.ventureId, ventureId))
-    .orderBy(desc(activity.createdAt));
+    .orderBy(desc(activity.createdAt))
+    .limit(FEED_LIMIT);
 }
 
 export async function listActivity(
   user: InternalUser,
+  executor?: Executor,
 ): Promise<PartnerActivity[]>;
 export async function listActivity(
   user: CurrentUser,
+  executor?: Executor,
 ): Promise<PartnerActivity[] | FounderActivity[]>;
 export async function listActivity(
   user: CurrentUser,
+  executor: Executor = db,
 ): Promise<PartnerActivity[] | FounderActivity[]> {
   if (!isInternalUser(user)) return [];
-  return db
+  return executor
+    .select(feedColumns)
+    .from(activity)
+    .leftJoin(users, eq(activity.actorId, users.id))
+    .leftJoin(ventures, eq(activity.ventureId, ventures.id))
+    .orderBy(desc(activity.createdAt))
+    .limit(FEED_LIMIT);
+}
+
+export async function listNotifications(
+  user: CurrentUser,
+  executor: Executor = db,
+): Promise<PartnerNotification[]> {
+  if (!isInternalUser(user)) return [];
+  return executor
     .select({
-      id: activity.id,
+      id: notifications.id,
+      activityId: notifications.activityId,
+      readAt: notifications.readAt,
+      createdAt: notifications.createdAt,
       actorId: activity.actorId,
+      actorInitials: users.initials,
+      actorName: users.name,
       verb: activity.verb,
       entity: activity.entity,
       entityId: activity.entityId,
       ventureId: activity.ventureId,
+      ventureName: ventures.name,
+      ventureColor: ventures.color,
+      ventureSlug: ventures.slug,
       payload: activity.payload,
-      createdAt: activity.createdAt,
     })
-    .from(activity)
-    .orderBy(desc(activity.createdAt));
+    .from(notifications)
+    .innerJoin(activity, eq(notifications.activityId, activity.id))
+    .leftJoin(users, eq(activity.actorId, users.id))
+    .leftJoin(ventures, eq(activity.ventureId, ventures.id))
+    .where(eq(notifications.userId, user.id))
+    .orderBy(desc(notifications.createdAt))
+    .limit(INBOX_LIMIT);
+}
+
+export async function markRead(
+  user: CurrentUser,
+  notificationId: string,
+  executor: Executor = db,
+): Promise<void> {
+  if (!isInternalUser(user)) return;
+  await executor
+    .update(notifications)
+    .set({ readAt: new Date() })
+    .where(
+      and(
+        eq(notifications.id, notificationId),
+        eq(notifications.userId, user.id),
+        isNull(notifications.readAt),
+      ),
+    );
+}
+
+export async function markAllRead(
+  user: CurrentUser,
+  executor: Executor = db,
+): Promise<void> {
+  if (!isInternalUser(user)) return;
+  await executor
+    .update(notifications)
+    .set({ readAt: new Date() })
+    .where(
+      and(eq(notifications.userId, user.id), isNull(notifications.readAt)),
+    );
 }
 
 export type RecordActivityInput = {

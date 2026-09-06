@@ -35,7 +35,10 @@ describe("founder-shaped return types omit partner-only fields", () => {
     expectTypeOf<PartnerApplication>().toHaveProperty("rawPayload");
     expectTypeOf<FounderApplication>().not.toHaveProperty("rawPayload");
     expectTypeOf<PartnerActivity>().toHaveProperty("payload");
+    expectTypeOf<PartnerActivity>().toHaveProperty("actorInitials");
+    expectTypeOf<PartnerActivity>().toHaveProperty("ventureName");
     expectTypeOf<FounderActivity>().not.toHaveProperty("payload");
+    expectTypeOf<FounderActivity>().toHaveProperty("actorInitials");
   });
 });
 

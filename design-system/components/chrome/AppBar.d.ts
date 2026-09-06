@@ -21,5 +21,7 @@ export interface AppBarProps {
   onMenuSelect?: (item: string) => void;
   /** unread notification count from `notifications` (null read_at). Amber when > 0. Omit to hide. */
   unreadCount?: number;
+  /** dropdown hanging from the unread count — typically the notification list */
+  unreadMenu?: React.ReactNode;
 }
 export function AppBar(props: AppBarProps): JSX.Element;

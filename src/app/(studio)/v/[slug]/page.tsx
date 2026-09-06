@@ -17,6 +17,8 @@ import { BOARD_COLUMNS, BOARD_LANES } from "@/lib/lanes";
 import { formatBytes, formatDayMonth, formatDueDate, typeGlyph } from "@/lib/format";
 import { groupVentureNotes } from "@/lib/notes/groups";
 import { listAssignablePartners } from "@/lib/data/tasks";
+import { listVentureActivity } from "@/lib/data/activity";
+import { toActivityRowView } from "@/lib/activity/view";
 import {
   VentureView,
   type VentureGate,
@@ -38,7 +40,7 @@ export default async function VenturePage({
   const color = ventureColor(venture.color);
   const currentStageIndex = STAGES.findIndex((s) => s.stage === venture.stage);
 
-  const [switchTargets, gateRows, stageEventRows, taskRows, docRows, noteRows, mentionedRows, eventsCount, decisionRows, partners] =
+  const [switchTargets, gateRows, stageEventRows, taskRows, docRows, noteRows, mentionedRows, eventsCount, decisionRows, partners, activityRows] =
     await Promise.all([
       listSwitchTargets(user, venture.id),
       listGateItems(user, [venture.id]),
@@ -50,6 +52,7 @@ export default async function VenturePage({
       countEvents(user, venture.id),
       listDecisions(user, venture.id),
       listAssignablePartners(user),
+      listVentureActivity(user, venture.id),
     ]);
 
   /* Gate rail: cleared stages get the date they were left (the createdAt of
@@ -135,6 +138,7 @@ export default async function VenturePage({
     { label: "Tasks", count: taskRows.length },
     { label: "Calendar", count: eventsCount },
     { label: "Decisions", count: decisionRows.length },
+    { label: "Activity", count: activityRows.length },
   ];
 
   return (
@@ -197,6 +201,7 @@ export default async function VenturePage({
           date: formatDueDate(v.createdAt),
         })),
       }))}
+      activity={activityRows.map((row) => toActivityRowView(row, now))}
     />
   );
 }

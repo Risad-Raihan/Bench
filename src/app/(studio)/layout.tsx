@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { requirePartner } from "@/lib/auth/current-user";
-import { unreadCount } from "@/lib/data/activity";
+import { listNotifications, unreadCount } from "@/lib/data/activity";
+import { toActivityRowView } from "@/lib/activity/view";
 
 export default async function StudioLayout({
   children,
@@ -8,6 +9,19 @@ export default async function StudioLayout({
   children: React.ReactNode;
 }) {
   const user = await requirePartner();
-  const unread = await unreadCount(user.id);
-  return <AppShell unreadCount={unread}>{children}</AppShell>;
+  const now = new Date();
+  const [unread, inbox] = await Promise.all([
+    unreadCount(user.id),
+    listNotifications(user),
+  ]);
+  return (
+    <AppShell
+      unreadCount={unread}
+      notifications={inbox.map((row) =>
+        toActivityRowView(row, now, { unread: row.readAt == null }),
+      )}
+    >
+      {children}
+    </AppShell>
+  );
 }

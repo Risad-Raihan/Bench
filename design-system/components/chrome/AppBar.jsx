@@ -1,14 +1,21 @@
 import React from "react";
-export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decisions"],active="Pipeline",dimmed=false,mark="B",onNavigate,onNewVenture,onJump,newLabel="+ New venture",jumpLabel="Jump to",jumpKey="⌘K",menuItems=["Profile","Settings","Log out"],onMenuSelect,unreadCount}){
+export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decisions"],active="Pipeline",dimmed=false,mark="B",onNavigate,onNewVenture,onJump,newLabel="+ New venture",jumpLabel="Jump to",jumpKey="⌘K",menuItems=["Profile","Settings","Log out"],onMenuSelect,unreadCount,unreadMenu}){
   const [nh,setNh]=React.useState(false);
   const [open,setOpen]=React.useState(false);
+  const [inbox,setInbox]=React.useState(false);
   const [hov,setHov]=React.useState(null);
   const wrap=React.useRef(null);
+  const unreadWrap=React.useRef(null);
   React.useEffect(()=>{if(!open)return;
     const away=e=>{if(wrap.current&&!wrap.current.contains(e.target))setOpen(false)};
     const esc=e=>{if(e.key==="Escape")setOpen(false)};
     document.addEventListener("mousedown",away);document.addEventListener("keydown",esc);
     return()=>{document.removeEventListener("mousedown",away);document.removeEventListener("keydown",esc)};},[open]);
+  React.useEffect(()=>{if(!inbox)return;
+    const away=e=>{if(unreadWrap.current&&!unreadWrap.current.contains(e.target))setInbox(false)};
+    const esc=e=>{if(e.key==="Escape")setInbox(false)};
+    document.addEventListener("mousedown",away);document.addEventListener("keydown",esc);
+    return()=>{document.removeEventListener("mousedown",away);document.removeEventListener("keydown",esc)};},[inbox]);
   return (
     <div style={{display:"flex",alignItems:"center",gap:14,padding:"11px 16px",borderBottom:"1px solid var(--line)",background:"var(--bg2)"}}>
       <div ref={wrap} style={{position:"relative",flex:"none"}}>
@@ -34,9 +41,13 @@ export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decision
           style={{fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",padding:"5px 11px",borderRadius:2,cursor:"pointer",
             border:"1px solid var(--copper)",color:"var(--copper)",background:nh?"var(--copper-tint)":"var(--copper-wash)",transition:"background var(--dur-fast)",
             whiteSpace:"nowrap",flex:"none"}}>{newLabel}</div>}
-        {unreadCount!=null&&<div title="Unread" aria-label={`${unreadCount} unread`}
-          style={{fontFamily:"var(--font-mono)",fontSize:11,fontVariantNumeric:"tabular-nums",padding:"5px 10px",borderRadius:2,flex:"none",
-            border:"1px solid var(--line)",color:unreadCount>0?"var(--amber)":"var(--faint)"}}>{unreadCount}</div>}
+        {unreadCount!=null&&<div ref={unreadWrap} style={{position:"relative",flex:"none"}}>
+          <div title="Unread" aria-label={`${unreadCount} unread`}
+            onClick={()=>unreadMenu&&setInbox(o=>!o)}
+            style={{fontFamily:"var(--font-mono)",fontSize:11,fontVariantNumeric:"tabular-nums",padding:"5px 10px",borderRadius:2,
+              border:"1px solid var(--line)",color:unreadCount>0?"var(--amber)":"var(--faint)",cursor:unreadMenu?"pointer":undefined}}>{unreadCount}</div>
+          {inbox&&unreadMenu}
+        </div>}
         <div onClick={onJump} style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--faint)",border:"1px solid var(--line)",padding:"5px 10px",borderRadius:2,display:"flex",gap:26,cursor:"pointer",whiteSpace:"nowrap",flex:"none"}}><span>{jumpLabel}</span><kbd>{jumpKey}</kbd></div>
       </div>
     </div>);

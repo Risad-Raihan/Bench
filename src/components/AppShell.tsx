@@ -4,6 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { AppBar } from "../../design-system/components/chrome/AppBar.jsx";
 import { NewVentureProvider, useNewVenture } from "./NewVentureModal";
+import { NotificationInbox } from "./NotificationInbox";
+import type { ActivityRowView } from "@/lib/activity/view";
 
 const NAV_ROUTES: Record<string, string> = {
   Pipeline: "/",
@@ -12,6 +14,7 @@ const NAV_ROUTES: Record<string, string> = {
   Docs: "/docs",
   Calendar: "/calendar",
   Decisions: "/decisions",
+  Activity: "/activity",
 };
 
 const ROUTE_LABELS: Record<string, string> = Object.fromEntries(
@@ -21,13 +24,17 @@ const ROUTE_LABELS: Record<string, string> = Object.fromEntries(
 export function AppShell({
   children,
   unreadCount,
+  notifications,
 }: {
   children: React.ReactNode;
   unreadCount: number;
+  notifications: ActivityRowView[];
 }) {
   return (
     <NewVentureProvider>
-      <AppShellChrome unreadCount={unreadCount}>{children}</AppShellChrome>
+      <AppShellChrome unreadCount={unreadCount} notifications={notifications}>
+        {children}
+      </AppShellChrome>
     </NewVentureProvider>
   );
 }
@@ -35,9 +42,11 @@ export function AppShell({
 function AppShellChrome({
   children,
   unreadCount,
+  notifications,
 }: {
   children: React.ReactNode;
   unreadCount: number;
+  notifications: ActivityRowView[];
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -65,6 +74,9 @@ function AppShellChrome({
         onNewVenture={open}
         onJump={() => {}}
         unreadCount={unreadCount}
+        unreadMenu={
+          <NotificationInbox items={notifications} unread={unreadCount} />
+        }
         onMenuSelect={(item) => {
           if (item === "Log out") void signOut({ redirectTo: "/signin" });
         }}

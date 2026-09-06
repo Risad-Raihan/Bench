@@ -17,12 +17,27 @@ export function formatDueDate(date: Date): string {
   return formatDayMonth(date).toUpperCase();
 }
 
+function elapsedMs(date: Date, now: Date): number {
+  return Math.max(0, now.getTime() - date.getTime());
+}
+
 /** Mono uppercase relative time for the note byline ("JUST NOW", "2H AGO"). */
 export function formatEditedAgo(date: Date, now: Date): string {
-  const ms = Math.max(0, now.getTime() - date.getTime());
+  const ms = elapsedMs(date, now);
   if (ms < 60_000) return "JUST NOW";
   if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}M AGO`;
   if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}H AGO`;
+  return formatDueDate(date);
+}
+
+/** Compact relative time for an activity row's 44px `when` column ("2H", "5D"). */
+export function formatFeedWhen(date: Date, now: Date): string {
+  const ms = elapsedMs(date, now);
+  if (ms < 60_000) return "NOW";
+  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}M`;
+  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}H`;
+  const days = Math.floor(ms / 86_400_000);
+  if (days < 14) return `${days}D`;
   return formatDueDate(date);
 }
 

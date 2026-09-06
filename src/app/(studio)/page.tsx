@@ -1,6 +1,5 @@
-import { eq, inArray } from "drizzle-orm";
-import { db } from "@/db";
-import { gateItems, tasks, users, ventures } from "@/db/schema";
+import { requirePartner } from "@/lib/auth/current-user";
+import { listGateItems, listPipelineTasks, listVentures } from "@/lib/data/ventures";
 import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
 import {
@@ -10,49 +9,16 @@ import {
 } from "@/components/PipelineView";
 
 export default async function PipelinePage() {
+  const user = await requirePartner();
   const now = new Date();
 
-  const ventureRows = await db
-    .select({
-      id: ventures.id,
-      slug: ventures.slug,
-      name: ventures.name,
-      oneLiner: ventures.oneLiner,
-      color: ventures.color,
-      stage: ventures.stage,
-      equityPct: ventures.equityPct,
-      founderName: ventures.founderName,
-      stageEnteredAt: ventures.stageEnteredAt,
-      boardPosition: ventures.boardPosition,
-      ownerInitials: users.initials,
-    })
-    .from(ventures)
-    .leftJoin(users, eq(ventures.ownerId, users.id))
-    .where(eq(ventures.status, "active"));
-
+  const ventureRows = await listVentures(user);
   const ventureIds = ventureRows.map((v) => v.id);
 
-  const gateRows = ventureIds.length
-    ? await db
-        .select({
-          ventureId: gateItems.ventureId,
-          stage: gateItems.stage,
-          doneAt: gateItems.doneAt,
-        })
-        .from(gateItems)
-        .where(inArray(gateItems.ventureId, ventureIds))
-    : [];
-
-  const taskRows = ventureIds.length
-    ? await db
-        .select({
-          ventureId: tasks.ventureId,
-          status: tasks.status,
-          dueDate: tasks.dueDate,
-        })
-        .from(tasks)
-        .where(inArray(tasks.ventureId, ventureIds))
-    : [];
+  const [gateRows, taskRows] = await Promise.all([
+    listGateItems(user, ventureIds),
+    listPipelineTasks(user, ventureIds),
+  ]);
 
   const gatesByVenture = new Map<string, { total: number; done: number }>();
   for (const g of gateRows) {

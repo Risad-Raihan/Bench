@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { resolveCurrentUser } from "./resolve";
+import { isInternalUser, resolveCurrentUser } from "./resolve";
 
 const partner = { userId: "u-partner", role: "partner" as const };
 const founder = { userId: "u-founder", role: "founder" as const };
@@ -44,5 +44,25 @@ describe("resolveCurrentUser", () => {
       role: "founder",
       ventureIds: [],
     });
+  });
+});
+
+describe("isInternalUser", () => {
+  test("partners, admins and viewers are internal", () => {
+    expect(isInternalUser({ id: "u", role: "partner", ventureIds: [] })).toBe(
+      true,
+    );
+    expect(isInternalUser({ id: "u", role: "admin", ventureIds: [] })).toBe(
+      true,
+    );
+    expect(isInternalUser({ id: "u", role: "viewer", ventureIds: [] })).toBe(
+      true,
+    );
+  });
+
+  test("founders are not internal", () => {
+    expect(
+      isInternalUser({ id: "u", role: "founder", ventureIds: ["v-a"] }),
+    ).toBe(false);
   });
 });

@@ -4,13 +4,20 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { users, ventureMembers, ventures } from "@/db/schema";
 import {
-  INTERNAL_ROLES,
+  isInternalUser,
   resolveCurrentUser,
   type CurrentUser,
+  type InternalUser,
 } from "./resolve";
 
-export type { CurrentUser, UserRole, AuthSession, MembershipRow } from "./resolve";
-export { resolveCurrentUser, INTERNAL_ROLES } from "./resolve";
+export type {
+  CurrentUser,
+  InternalUser,
+  UserRole,
+  AuthSession,
+  MembershipRow,
+} from "./resolve";
+export { resolveCurrentUser, INTERNAL_ROLES, isInternalUser } from "./resolve";
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const session = await auth();
@@ -36,10 +43,10 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   return resolveCurrentUser({ userId: user.id, role: user.role }, memberships);
 }
 
-export async function requirePartner(): Promise<CurrentUser> {
+export async function requirePartner(): Promise<InternalUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/signin");
-  if (!INTERNAL_ROLES.has(user.role)) {
+  if (!isInternalUser(user)) {
     redirect(await founderHomePath(user));
   }
   return user;

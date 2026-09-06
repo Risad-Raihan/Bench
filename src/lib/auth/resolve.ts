@@ -8,6 +8,10 @@ export type CurrentUser = {
   ventureIds: string[];
 };
 
+export type InternalUser = CurrentUser & {
+  role: Exclude<UserRole, "founder">;
+};
+
 export type AuthSession = {
   userId: string;
   role: UserRole;
@@ -18,6 +22,10 @@ export type MembershipRow = {
 };
 
 export const INTERNAL_ROLES = new Set<UserRole>(["partner", "admin", "viewer"]);
+
+export function isInternalUser(user: CurrentUser): user is InternalUser {
+  return INTERNAL_ROLES.has(user.role);
+}
 
 /**
  * Pure. Partners bypass venture scoping (`ventureIds` is empty — callers treat

@@ -1,17 +1,16 @@
-import { and, asc, count, eq, isNull, ne } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { db } from "@/db";
+import { requirePartner } from "@/lib/auth/current-user";
+import { countDecisions } from "@/lib/data/decisions";
+import { countDocs } from "@/lib/data/docs";
+import { countNotes } from "@/lib/data/notes";
 import {
-  decisions,
-  docs,
-  events,
-  gateItems,
-  notes,
-  tasks,
-  users,
-  ventureStageEvents,
-  ventures,
-} from "@/db/schema";
+  countEvents,
+  getVenture,
+  listGateItems,
+  listStageEvents,
+  listSwitchTargets,
+  listVentureTasks,
+} from "@/lib/data/ventures";
 import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
 import { BOARD_COLUMNS, BOARD_LANES } from "@/lib/lanes";
@@ -27,25 +26,11 @@ export default async function VenturePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const user = await requirePartner();
   const { slug } = await params;
   const now = new Date();
 
-  const [venture] = await db
-    .select({
-      id: ventures.id,
-      slug: ventures.slug,
-      name: ventures.name,
-      oneLiner: ventures.oneLiner,
-      color: ventures.color,
-      stage: ventures.stage,
-      equityPct: ventures.equityPct,
-      stageEnteredAt: ventures.stageEnteredAt,
-      ownerName: users.name,
-    })
-    .from(ventures)
-    .leftJoin(users, eq(ventures.ownerId, users.id))
-    .where(eq(ventures.slug, slug));
-
+  const venture = await getVenture(user, slug);
   if (!venture) notFound();
 
   const color = ventureColor(venture.color);
@@ -53,40 +38,14 @@ export default async function VenturePage({
 
   const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, notesCount, eventsCount, decisionsCount] =
     await Promise.all([
-      db
-        .select({ slug: ventures.slug, name: ventures.name, color: ventures.color })
-        .from(ventures)
-        .where(and(eq(ventures.status, "active"), ne(ventures.id, venture.id)))
-        .orderBy(asc(ventures.name)),
-      db
-        .select({ stage: gateItems.stage, label: gateItems.label, doneAt: gateItems.doneAt, sortOrder: gateItems.sortOrder })
-        .from(gateItems)
-        .where(eq(gateItems.ventureId, venture.id))
-        .orderBy(asc(gateItems.sortOrder)),
-      db
-        .select({ toStage: ventureStageEvents.toStage, createdAt: ventureStageEvents.createdAt })
-        .from(ventureStageEvents)
-        .where(eq(ventureStageEvents.ventureId, venture.id))
-        .orderBy(asc(ventureStageEvents.createdAt)),
-      db
-        .select({
-          id: tasks.id,
-          title: tasks.title,
-          lane: tasks.lane,
-          status: tasks.status,
-          position: tasks.position,
-          dueDate: tasks.dueDate,
-          originNoteId: tasks.originNoteId,
-          assigneeInitials: users.initials,
-        })
-        .from(tasks)
-        .leftJoin(users, eq(tasks.assigneeId, users.id))
-        .where(and(eq(tasks.ventureId, venture.id), isNull(tasks.archivedAt)))
-        .orderBy(asc(tasks.lane), asc(tasks.position)),
-      db.select({ n: count() }).from(docs).where(and(eq(docs.ventureId, venture.id), isNull(docs.archivedAt))),
-      db.select({ n: count() }).from(notes).where(and(eq(notes.ventureId, venture.id), isNull(notes.archivedAt))),
-      db.select({ n: count() }).from(events).where(and(eq(events.ventureId, venture.id), isNull(events.deletedAt))),
-      db.select({ n: count() }).from(decisions).where(eq(decisions.ventureId, venture.id)),
+      listSwitchTargets(user, venture.id),
+      listGateItems(user, [venture.id]),
+      listStageEvents(user, venture.id),
+      listVentureTasks(user, venture.id),
+      countDocs(user, venture.id),
+      countNotes(user, venture.id),
+      countEvents(user, venture.id),
+      countDecisions(user, venture.id),
     ]);
 
   /* Gate rail: cleared stages get the date they were left (the createdAt of
@@ -156,11 +115,11 @@ export default async function VenturePage({
 
   const tabs = [
     { label: "Overview" },
-    { label: "Docs", count: docsCount[0]?.n ?? 0 },
-    { label: "Notes", count: notesCount[0]?.n ?? 0 },
+    { label: "Docs", count: docsCount },
+    { label: "Notes", count: notesCount },
     { label: "Tasks", count: taskRows.length },
-    { label: "Calendar", count: eventsCount[0]?.n ?? 0 },
-    { label: "Decisions", count: decisionsCount[0]?.n ?? 0 },
+    { label: "Calendar", count: eventsCount },
+    { label: "Decisions", count: decisionsCount },
   ];
 
   return (

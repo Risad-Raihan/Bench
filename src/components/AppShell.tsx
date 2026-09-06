@@ -99,12 +99,7 @@ function AppShellChrome({
   return (
     <div
       style={{
-        maxWidth: "var(--w-doc)",
-        margin: "0 auto",
         background: "var(--bg)",
-        border: "1px solid var(--line)",
-        borderRadius: 3,
-        overflow: "hidden",
         minHeight: "100vh",
       }}
     >

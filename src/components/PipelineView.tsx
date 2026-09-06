@@ -3,7 +3,6 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Kpi,
   PageHeader,
   StatStrip,
 } from "../../design-system/components/chrome/PageHeader.jsx";
@@ -49,12 +48,6 @@ export interface PipelineStageColumn {
   ventures: PipelineVentureCard[];
 }
 
-export interface PipelineKpis {
-  needAttention: number;
-  avgStakePct: string;
-  avgDaysInStage: string;
-}
-
 export interface PipelineStat {
   value: string | number;
   label: string;
@@ -64,11 +57,9 @@ const DRAG_TYPE = "text/plain";
 
 export function PipelineView({
   stages,
-  kpis,
   stats,
 }: {
   stages: PipelineStageColumn[];
-  kpis: PipelineKpis;
   stats: PipelineStat[];
 }) {
   const router = useRouter();
@@ -132,14 +123,7 @@ export function PipelineView({
     <>
       <PageHeader
         title="Pipeline"
-        right={
-          <>
-            <Kpi value={kpis.needAttention} label="need you" hot />
-            <Kpi value={kpis.avgStakePct} label="avg stake %" />
-            <Kpi value={kpis.avgDaysInStage} label="avg days in stage" />
-            <ActionButton onClick={open}>+ New venture</ActionButton>
-          </>
-        }
+        right={<ActionButton onClick={open}>+ New venture</ActionButton>}
       />
       <PipelineBoard columns={6}>
         {stages.map((col) => (

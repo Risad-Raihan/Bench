@@ -35,22 +35,6 @@ export default async function PipelinePage() {
   }
 
   const staleVentures = ventureRows.filter((v) => isStale(v.stageEnteredAt, now));
-  const staleApplications = inbox.filter((a) => isStale(a.createdAt, now));
-  const stakes = ventureRows
-    .map((v) => v.equityPct)
-    .filter((v): v is number => v != null);
-  const avgStakePct =
-    stakes.length > 0
-      ? ((stakes.reduce((a, b) => a + b, 0) / stakes.length) * 100).toFixed(1)
-      : "—";
-  const avgDaysInStage =
-    ventureRows.length > 0
-      ? Math.round(
-          ventureRows.reduce((sum, v) => sum + daysSince(v.stageEnteredAt, now), 0) /
-            ventureRows.length,
-        ).toString()
-      : "—";
-
   const openTasks = taskRows.filter((t) => t.status !== "done");
   const weekFromNow = new Date(now.getTime() + 7 * 86_400_000);
   const dueThisWeek = openTasks.filter(
@@ -124,15 +108,5 @@ export default async function PipelinePage() {
     { value: staleVentures.length, label: "stalled" },
   ];
 
-  return (
-    <PipelineView
-      stages={stages}
-      kpis={{
-        needAttention: staleVentures.length + staleApplications.length,
-        avgStakePct,
-        avgDaysInStage,
-      }}
-      stats={stats}
-    />
-  );
+  return <PipelineView stages={stages} stats={stats} />;
 }

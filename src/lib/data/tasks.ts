@@ -4,8 +4,10 @@
  */
 import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { tasks, users, ventures } from "@/db/schema";
+import { taskComments, tasks, users, ventures } from "@/db/schema";
 import type { MyWorkTask } from "@/lib/my-work";
+import { recordActivity } from "@/lib/data/activity";
+import { hasLiveMembership } from "@/lib/data/scope";
 import {
   isInternalUser,
   type CurrentUser,
@@ -258,4 +260,38 @@ export async function applyCellPositions(
       .set({ position: u.position, updatedAt: new Date() })
       .where(eq(tasks.id, u.id));
   }
+}
+
+export async function addTaskComment(
+  user: CurrentUser,
+  input: { taskId: string; body: string },
+  executor: Executor = db,
+): Promise<{ id: string } | null> {
+  const task = await getTask(input.taskId, executor);
+  if (!task?.ventureId) return null;
+  if (!(await hasLiveMembership(user, task.ventureId, executor))) return null;
+  const body = input.body.trim();
+  if (!body) throw new Error("Comment is empty.");
+
+  const [row] = await executor
+    .insert(taskComments)
+    .values({
+      taskId: input.taskId,
+      authorId: user.id,
+      body,
+    })
+    .returning({ id: taskComments.id });
+  if (!row) throw new Error("comment insert returned no row");
+
+  await recordActivity(
+    {
+      verb: "commented",
+      entity: "task",
+      entityId: input.taskId,
+      ventureId: task.ventureId,
+      actorId: user.id,
+    },
+    executor,
+  );
+  return row;
 }

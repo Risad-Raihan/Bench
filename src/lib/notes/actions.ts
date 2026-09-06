@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requirePartner } from "@/lib/auth/current-user";
+import { requirePartner, requireUser } from "@/lib/auth/current-user";
 import { getDecisionById, updateDecisionTitle } from "@/lib/data/decisions";
 import {
   archiveNote,
@@ -60,7 +60,7 @@ export async function saveNoteAction(input: {
   title?: string;
   reason: "blur" | "interval" | "flush";
 }): Promise<NoteActionResult> {
-  const user = await requirePartner();
+  const user = await requireUser();
   try {
     const row = await saveNote(user, input);
     if (!row) return { ok: false, error: "Note not found." };

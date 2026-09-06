@@ -1,10 +1,11 @@
 /**
- * Founder-reachable decision reads and partner writes. Pages never touch
- * `db` (ADR-0006). Founder visibility filter (`shared` only) lands in S14.
+ * Founder-reachable decision reads. Pages never touch `db` (ADR-0006).
+ * Founders see `shared` decisions on their venture; writes stay partner-only.
  */
-import { count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { decisions, notes, users, type visibility } from "@/db/schema";
+import { canSeeVenture } from "@/lib/data/scope";
 import {
   isInternalUser,
   type CurrentUser,
@@ -57,8 +58,16 @@ export async function listDecisions(
   executor: Executor = db,
 ): Promise<PartnerDecision[] | FounderDecision[]> {
   if (!isInternalUser(user)) {
-    void ventureId;
-    return [];
+    if (!canSeeVenture(user, ventureId)) return [];
+    return executor
+      .select(decisionColumns)
+      .from(decisions)
+      .leftJoin(users, eq(decisions.decidedBy, users.id))
+      .leftJoin(notes, eq(decisions.sourceNoteId, notes.id))
+      .where(
+        and(eq(decisions.ventureId, ventureId), eq(decisions.visibility, "shared")),
+      )
+      .orderBy(desc(decisions.decidedAt));
   }
   return executor
     .select(decisionColumns)
@@ -82,10 +91,6 @@ export async function getDecisionById(
   decisionId: string,
   executor: Executor = db,
 ): Promise<PartnerDecision | FounderDecision | null> {
-  if (!isInternalUser(user)) {
-    void decisionId;
-    return null;
-  }
   const [row] = await executor
     .select(decisionColumns)
     .from(decisions)
@@ -93,14 +98,29 @@ export async function getDecisionById(
     .leftJoin(notes, eq(decisions.sourceNoteId, notes.id))
     .where(eq(decisions.id, decisionId))
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+  if (!isInternalUser(user)) {
+    if (row.visibility !== "shared" || !canSeeVenture(user, row.ventureId)) {
+      return null;
+    }
+  }
+  return row;
 }
 
 export async function countDecisions(
   user: CurrentUser,
   ventureId: string,
 ): Promise<number> {
-  if (!isInternalUser(user)) return 0;
+  if (!isInternalUser(user)) {
+    if (!canSeeVenture(user, ventureId)) return 0;
+    const [row] = await db
+      .select({ n: count() })
+      .from(decisions)
+      .where(
+        and(eq(decisions.ventureId, ventureId), eq(decisions.visibility, "shared")),
+      );
+    return row?.n ?? 0;
+  }
   const [row] = await db
     .select({ n: count() })
     .from(decisions)

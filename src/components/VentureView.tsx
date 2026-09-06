@@ -125,6 +125,7 @@ export function VentureView({
   decisions,
   docs,
   activity,
+  partner = true,
 }: {
   slug: string;
   name: string;
@@ -155,6 +156,7 @@ export function VentureView({
   }[];
   docs?: DocsTabFile[];
   activity?: ActivityRowView[];
+  partner?: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("Overview");
@@ -219,8 +221,8 @@ export function VentureView({
         <BackStrip
           current={name}
           color={color}
-          onBack={() => router.push("/")}
-          onSwitch={() => setSwitcherOpen((o) => !o)}
+          onBack={() => router.push(partner ? "/" : `/v/${slug}`)}
+          onSwitch={partner ? () => setSwitcherOpen((o) => !o) : undefined}
         />
         {switcherOpen && (
           <div
@@ -273,13 +275,15 @@ export function VentureView({
         stage={stageLabel}
         stageMeta={stageMeta}
       />
-      <GateRail
-        gates={gates}
-        onSelect={(label: string) => {
-          const target = STAGES.find((s) => s.label === label);
-          if (target) requestMove(target.stage);
-        }}
-      />
+      {partner ? (
+        <GateRail
+          gates={gates}
+          onSelect={(label: string) => {
+            const target = STAGES.find((s) => s.label === label);
+            if (target) requestMove(target.stage);
+          }}
+        />
+      ) : null}
       <VentureTabs
         tabs={tabs}
         active={tab}
@@ -287,7 +291,7 @@ export function VentureView({
         scope={`${name} only`}
         accent={color}
       />
-      {tab === "Tasks" ? (
+      {tab === "Tasks" && partner ? (
         <TasksBoard
           slug={slug}
           ventureId={ventureId}
@@ -301,9 +305,15 @@ export function VentureView({
           ventureId={ventureId}
           notes={notes}
           mentioned={mentionedNotes ?? []}
+          canCreate={partner}
         />
       ) : tab === "Docs" ? (
-        <DocsView slug={slug} ventureId={ventureId} files={docs ?? []} />
+        <DocsView
+          slug={slug}
+          ventureId={ventureId}
+          files={docs ?? []}
+          sharedOnly={!partner}
+        />
       ) : tab === "Decisions" ? (
         <VentureDecisionsList
           decisions={decisions ?? []}
@@ -317,7 +327,7 @@ export function VentureView({
             emptyHint="Actions on this venture will appear here."
           />
         </PageContainer>
-      ) : tab === "Overview" && checklist.length > 0 ? (
+      ) : tab === "Overview" && partner && checklist.length > 0 ? (
         <OverviewGates
           slug={slug}
           stageLabel={stageLabel}
@@ -468,12 +478,14 @@ function VentureNotesList({
   ventureId,
   notes,
   mentioned,
+  canCreate,
 }: {
   slug: string;
   color: string;
   ventureId: string;
   notes: { id: string; title: string }[];
   mentioned: { id: string; title: string }[];
+  canCreate: boolean;
 }) {
   const router = useRouter();
 
@@ -487,8 +499,8 @@ function VentureNotesList({
       <PageContainer>
         <EmptyState
           hint="Notes owned by this venture will appear here."
-          action="+ New note"
-          onAction={() => void onCreate()}
+          action={canCreate ? "+ New note" : undefined}
+          onAction={canCreate ? () => void onCreate() : undefined}
         >
           No notes yet
         </EmptyState>
@@ -498,9 +510,11 @@ function VentureNotesList({
 
   return (
     <PageContainer>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 11 }}>
-        <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
-      </div>
+      {canCreate ? (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 11 }}>
+          <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
+        </div>
+      ) : null}
       {notes.length > 0 && mentioned.length > 0 && (
         <NoteGroupHeader>Owned</NoteGroupHeader>
       )}

@@ -1,6 +1,7 @@
 /**
- * Founder-reachable note reads and partner writes. Pages never touch `db`
- * (ADR-0006). Founder visibility filter (`shared` only) lands in S14.
+ * Founder-reachable note reads and writes. Pages never touch `db`
+ * (ADR-0006). Founders see and edit `shared` notes on their venture only.
+ * A studio note that @-mentions their venture does not surface.
  */
 import { and, count, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 import { db } from "@/db";
@@ -15,6 +16,7 @@ import {
   type visibility,
 } from "@/db/schema";
 import { recordActivity } from "@/lib/data/activity";
+import { canSeeVenture, hasLiveMembership } from "@/lib/data/scope";
 import {
   isInternalUser,
   type CurrentUser,
@@ -75,21 +77,33 @@ const listColumns = {
 export async function listNotes(
   user: InternalUser,
   ventureId: string,
+  executor?: Executor,
 ): Promise<PartnerNote[]>;
 export async function listNotes(
   user: CurrentUser,
   ventureId: string,
+  executor?: Executor,
 ): Promise<PartnerNote[] | FounderNote[]>;
 export async function listNotes(
   user: CurrentUser,
   ventureId: string,
+  executor: Executor = db,
 ): Promise<PartnerNote[] | FounderNote[]> {
   if (!isInternalUser(user)) {
-    // S14: visibility = shared, 404 out of scope; studio @mentions do not surface.
-    void ventureId;
-    return [];
+    if (!canSeeVenture(user, ventureId)) return [];
+    return executor
+      .select(listColumns)
+      .from(notes)
+      .where(
+        and(
+          eq(notes.ventureId, ventureId),
+          eq(notes.visibility, "shared"),
+          isNull(notes.archivedAt),
+        ),
+      )
+      .orderBy(desc(notes.updatedAt));
   }
-  return db
+  return executor
     .select(listColumns)
     .from(notes)
     .where(and(eq(notes.ventureId, ventureId), isNull(notes.archivedAt)))
@@ -114,24 +128,44 @@ export async function listAllNotes(
 }
 
 export async function getNoteById(
-  user: InternalUser,
-  noteId: string,
-  executor?: Executor,
-): Promise<PartnerNoteDetail | null>;
-export async function getNoteById(
-  user: CurrentUser,
-  noteId: string,
-  executor?: Executor,
-): Promise<PartnerNoteDetail | FounderNote | null>;
-export async function getNoteById(
   user: CurrentUser,
   noteId: string,
   executor: Executor = db,
-): Promise<PartnerNoteDetail | FounderNote | null> {
+): Promise<PartnerNoteDetail | null> {
   if (!isInternalUser(user)) {
-    // S14: studio or out-of-scope id → 404.
-    void noteId;
-    return null;
+    const [row] = await executor
+      .select({
+        ...listColumns,
+        content: notes.content,
+        createdAt: notes.createdAt,
+        createdBy: notes.createdBy,
+        lastEditedBy: notes.lastEditedBy,
+        lastEditedByName: users.name,
+        lastEditedByInitials: users.initials,
+        ventureName: ventures.name,
+        ventureColor: ventures.color,
+        ventureSlug: ventures.slug,
+      })
+      .from(notes)
+      .leftJoin(users, eq(notes.lastEditedBy, users.id))
+      .leftJoin(ventures, eq(notes.ventureId, ventures.id))
+      .where(
+        and(
+          eq(notes.id, noteId),
+          eq(notes.visibility, "shared"),
+          isNull(notes.archivedAt),
+        ),
+      )
+      .limit(1);
+    if (!row) return null;
+    if (!(await founderCanReadNote(user, row, executor))) return null;
+
+    const [versions] = await executor
+      .select({ n: count() })
+      .from(noteVersions)
+      .where(eq(noteVersions.noteId, noteId));
+
+    return { ...row, versionCount: versions?.n ?? 0 };
   }
   const [row] = await executor
     .select({
@@ -166,7 +200,22 @@ export async function listMentionedNotes(
   ventureId: string,
   executor: Executor = db,
 ): Promise<PartnerNote[]> {
-  if (!isInternalUser(user)) return [];
+  if (!isInternalUser(user)) {
+    if (!canSeeVenture(user, ventureId)) return [];
+    return executor
+      .select(listColumns)
+      .from(notes)
+      .innerJoin(noteMentions, eq(noteMentions.noteId, notes.id))
+      .where(
+        and(
+          eq(noteMentions.ventureId, ventureId),
+          eq(notes.visibility, "shared"),
+          isNull(notes.archivedAt),
+          or(isNull(notes.ventureId), ne(notes.ventureId, ventureId)),
+        ),
+      )
+      .orderBy(desc(notes.updatedAt));
+  }
   return executor
     .select(listColumns)
     .from(notes)
@@ -185,7 +234,20 @@ export async function countNotes(
   user: CurrentUser,
   ventureId: string,
 ): Promise<number> {
-  if (!isInternalUser(user)) return 0;
+  if (!isInternalUser(user)) {
+    if (!canSeeVenture(user, ventureId)) return 0;
+    const [row] = await db
+      .select({ n: count() })
+      .from(notes)
+      .where(
+        and(
+          eq(notes.ventureId, ventureId),
+          eq(notes.visibility, "shared"),
+          isNull(notes.archivedAt),
+        ),
+      );
+    return row?.n ?? 0;
+  }
   const [row] = await db
     .select({ n: count() })
     .from(notes)
@@ -241,13 +303,31 @@ export type SaveNoteResult = {
   snapshotted: boolean;
 };
 
+async function founderCanReadNote(
+  user: CurrentUser,
+  note: { id: string; ventureId: string | null },
+  executor: Executor,
+): Promise<boolean> {
+  if (canSeeVenture(user, note.ventureId)) return true;
+  if (user.ventureIds.length === 0) return false;
+  const [mention] = await executor
+    .select({ noteId: noteMentions.noteId })
+    .from(noteMentions)
+    .where(
+      and(
+        eq(noteMentions.noteId, note.id),
+        inArray(noteMentions.ventureId, user.ventureIds),
+      ),
+    )
+    .limit(1);
+  return mention != null;
+}
+
 export async function saveNote(
   user: CurrentUser,
   input: SaveNoteInput,
   executor: Executor = db,
 ): Promise<SaveNoteResult | null> {
-  if (!isInternalUser(user)) return null;
-
   const [existing] = await executor
     .select({
       id: notes.id,
@@ -255,11 +335,20 @@ export async function saveNote(
       title: notes.title,
       createdAt: notes.createdAt,
       updatedAt: notes.updatedAt,
+      visibility: notes.visibility,
+      ventureId: notes.ventureId,
     })
     .from(notes)
     .where(and(eq(notes.id, input.noteId), isNull(notes.archivedAt)))
     .limit(1);
   if (!existing) return null;
+
+  if (!isInternalUser(user)) {
+    if (existing.visibility !== "shared" || !existing.ventureId) return null;
+    if (!(await hasLiveMembership(user, existing.ventureId, executor))) {
+      return null;
+    }
+  }
 
   const content = asEditorDoc(input.content);
   const title = input.title?.trim() || existing.title;
@@ -294,17 +383,26 @@ export async function saveNote(
   if (!updated) return null;
 
   const { added, removed } = diffMentions(existing.content, content);
-  if (removed.length > 0) {
+  // A founder edits a shared note on their venture; they may only add or
+  // remove a mention of that same venture, never touch another venture's
+  // note_mentions row.
+  const scopeMention = (ids: string[]) =>
+    isInternalUser(user)
+      ? ids
+      : ids.filter((id) => id === existing.ventureId);
+  const mentionAdds = scopeMention(added);
+  const mentionRemoves = scopeMention(removed);
+  if (mentionRemoves.length > 0) {
     await executor
       .delete(noteMentions)
       .where(
         and(
           eq(noteMentions.noteId, input.noteId),
-          inArray(noteMentions.ventureId, removed),
+          inArray(noteMentions.ventureId, mentionRemoves),
         ),
       );
   }
-  for (const ventureId of added) {
+  for (const ventureId of mentionAdds) {
     await executor
       .insert(noteMentions)
       .values({ noteId: input.noteId, ventureId })

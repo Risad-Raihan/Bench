@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requirePartner } from "@/lib/auth/current-user";
+import { requirePartner, requireUser } from "@/lib/auth/current-user";
 import {
   archiveDoc,
   authorizeDocUpload,
@@ -52,7 +52,7 @@ export async function completeDocUploadAction(input: {
   name: string;
   slug: string;
 }): Promise<DocActionResult> {
-  const user = await requirePartner();
+  const user = await requireUser();
   try {
     const authorized = await authorizeDocUpload(user, {
       ventureId: input.ventureId,

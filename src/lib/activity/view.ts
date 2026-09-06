@@ -20,7 +20,7 @@ export type ActivityCopySource = {
   ventureName: string | null;
   ventureColor: string | null;
   ventureSlug: string | null;
-  payload: Record<string, unknown> | null;
+  payload?: Record<string, unknown> | null;
   createdAt: Date;
 };
 
@@ -32,7 +32,12 @@ export function toActivityRowView(
   return {
     id: row.id,
     who: row.actorInitials ?? "—",
-    text: formatActivityText(row),
+    text: formatActivityText({
+      verb: row.verb,
+      entity: row.entity,
+      ventureName: row.ventureName,
+      payload: row.payload ?? null,
+    }),
     when: formatFeedWhen(row.createdAt, now),
     color: extra?.unread ? "var(--amber)" : ventureColor(row.ventureColor),
     href: row.ventureSlug ? `/v/${row.ventureSlug}` : null,

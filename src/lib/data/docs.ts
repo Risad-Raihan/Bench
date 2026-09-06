@@ -1,14 +1,13 @@
 /**
- * Founder-reachable doc reads and partner writes. Pages never touch `db`
- * (ADR-0006). Founder visibility filter (`shared` only) lands in S14.
- *
- * Default list is heads only: a row is hidden while a live (non-archived)
- * successor points at it. Archiving the head resurfaces the prior version.
+ * Founder-reachable doc reads and writes. Pages never touch `db`
+ * (ADR-0006). Founders see `shared` docs on their venture and may upload
+ * to that venture (forced `shared`). Archive stays partner-only.
  */
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { docs, users, type visibility } from "@/db/schema";
 import { recordActivity } from "@/lib/data/activity";
+import { canSeeVenture, hasLiveMembership } from "@/lib/data/scope";
 import { getVentureById } from "@/lib/data/ventures";
 import {
   canSupersede,
@@ -155,15 +154,18 @@ export async function listDocs(
   user: CurrentUser,
   ventureId: string,
   executor?: Executor,
-): Promise<PartnerDocHead[] | FounderDoc[]>;
+): Promise<PartnerDocHead[]>;
 export async function listDocs(
   user: CurrentUser,
   ventureId: string,
   executor: Executor = db,
-): Promise<PartnerDocHead[] | FounderDoc[]> {
+): Promise<PartnerDocHead[]> {
   if (!isInternalUser(user)) {
-    void ventureId;
-    return [];
+    if (!canSeeVenture(user, ventureId)) return [];
+    const rows = await loadVentureDocs(ventureId, executor);
+    return headsFrom(
+      rows.filter((row) => row.visibility === "shared").map(toPublic),
+    );
   }
   const rows = await loadVentureDocs(ventureId, executor);
   return headsFrom(rows.map(toPublic));
@@ -174,7 +176,7 @@ export async function listDocFolders(
   ventureId: string,
   executor: Executor = db,
 ): Promise<string[]> {
-  const heads = await listDocs(user as InternalUser, ventureId, executor);
+  const heads = await listDocs(user, ventureId, executor);
   const names = new Set<string>();
   for (const head of heads) {
     if (head.folder) names.add(head.folder);
@@ -197,17 +199,19 @@ export async function getDocById(
   docId: string,
   executor: Executor = db,
 ): Promise<PartnerDoc | FounderDoc | null> {
-  if (!isInternalUser(user)) {
-    void docId;
-    return null;
-  }
   const [row] = await executor
     .select(listColumns)
     .from(docs)
     .leftJoin(users, eq(docs.uploadedBy, users.id))
     .where(eq(docs.id, docId))
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+  if (!isInternalUser(user)) {
+    if (row.visibility !== "shared" || !canSeeVenture(user, row.ventureId)) {
+      return null;
+    }
+  }
+  return row;
 }
 
 export async function getDocForDownload(
@@ -215,17 +219,19 @@ export async function getDocForDownload(
   docId: string,
   executor: Executor = db,
 ): Promise<DocDownload | null> {
-  if (!isInternalUser(user)) {
-    void docId;
-    return null;
-  }
   const [row] = await executor
     .select({ ...listColumns, storageKey: docs.storageKey })
     .from(docs)
     .leftJoin(users, eq(docs.uploadedBy, users.id))
     .where(eq(docs.id, docId))
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+  if (!isInternalUser(user)) {
+    if (row.visibility !== "shared" || !canSeeVenture(user, row.ventureId)) {
+      return null;
+    }
+  }
+  return row;
 }
 
 export async function countDocs(
@@ -233,8 +239,7 @@ export async function countDocs(
   ventureId: string,
   executor: Executor = db,
 ): Promise<number> {
-  if (!isInternalUser(user)) return 0;
-  const heads = await listDocs(user as InternalUser, ventureId, executor);
+  const heads = await listDocs(user, ventureId, executor);
   return heads.length;
 }
 
@@ -313,7 +318,8 @@ export async function authorizeDocUpload(
   executor: Executor = db,
 ): Promise<InsertDocValues & { uploaderId: string }> {
   if (!isInternalUser(user)) {
-    throw new Error("Only a partner can upload a doc.");
+    const ok = await hasLiveMembership(user, input.ventureId?.trim() ?? "", executor);
+    if (!ok) throw new Error("Venture not found.");
   }
   const ventureId = input.ventureId?.trim();
   if (!ventureId) throw new Error("A venture is required.");
@@ -321,12 +327,14 @@ export async function authorizeDocUpload(
   if (!venture) throw new Error("Venture not found.");
   const rows = await loadVentureDocs(ventureId, executor);
 
-  let visibility: Visibility = "studio";
+  let visibility: Visibility = isInternalUser(user) ? "studio" : "shared";
   if (input.visibility) {
     if (!VISIBILITIES.has(input.visibility as Visibility)) {
       throw new Error("Visibility must be studio or shared.");
     }
-    visibility = input.visibility as Visibility;
+    visibility = isInternalUser(user)
+      ? (input.visibility as Visibility)
+      : "shared";
   }
 
   const folder = input.folder?.trim() ? input.folder.trim().slice(0, 80) : null;
@@ -334,6 +342,12 @@ export async function authorizeDocUpload(
 
   let supersedesId: string | null = null;
   if (input.supersedesId) {
+    if (!isInternalUser(user)) {
+      const target = rows.find((row) => row.id === input.supersedesId);
+      if (!target || target.visibility !== "shared") {
+        throw new Error("Doc to supersede was not found.");
+      }
+    }
     const versions = rows.map(asVersion);
     const related = chainFor(input.supersedesId, versions);
     if (related.length === 0) {

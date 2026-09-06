@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, isInternalUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { saveNote } from "@/lib/data/notes";
 
 export const runtime = "nodejs";
@@ -9,7 +9,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   const user = await getCurrentUser();
-  if (!user || !isInternalUser(user)) {
+  if (!user) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

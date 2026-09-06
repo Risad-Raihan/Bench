@@ -75,10 +75,12 @@ export function DocsView({
   slug,
   ventureId,
   files,
+  sharedOnly = false,
 }: {
   slug: string;
   ventureId: string;
   files: DocsTabFile[];
+  sharedOnly?: boolean;
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -109,7 +111,7 @@ export function DocsView({
     setDraft({
       file,
       folder: folder !== ALL && folder !== UNFILED ? folder : "",
-      visibility: "studio",
+      visibility: sharedOnly ? "shared" : "studio",
     });
   };
 
@@ -306,7 +308,9 @@ export function DocsView({
                 >
                   <ActionButton>Download</ActionButton>
                 </a>
-                <ActionButton onClick={onArchive}>Archive</ActionButton>
+                {sharedOnly ? null : (
+                  <ActionButton onClick={onArchive}>Archive</ActionButton>
+                )}
               </div>
             </div>
           }
@@ -375,7 +379,10 @@ export function DocsView({
                   color: error ? "var(--amber)" : "var(--faint)",
                 }}
               >
-                {error ?? "Lands in this venture. Studio until you share it."}
+                {error ??
+                  (sharedOnly
+                    ? "Lands in this venture as shared."
+                    : "Lands in this venture. Studio until you share it.")}
               </span>
             </>
           }
@@ -400,16 +407,31 @@ export function DocsView({
             >
               Visibility
             </div>
-            <FilterBar
-              filters={["Studio", "Shared"]}
-              active={draft.visibility === "shared" ? "Shared" : "Studio"}
-              onSelect={(f: string) =>
-                setDraft({
-                  ...draft,
-                  visibility: f === "Shared" ? "shared" : "studio",
-                })
-              }
-            />
+            {sharedOnly ? (
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  letterSpacing: ".08em",
+                  textTransform: "uppercase",
+                  color: "var(--dim)",
+                  padding: "6px 0",
+                }}
+              >
+                Shared
+              </div>
+            ) : (
+              <FilterBar
+                filters={["Studio", "Shared"]}
+                active={draft.visibility === "shared" ? "Shared" : "Studio"}
+                onSelect={(f: string) =>
+                  setDraft({
+                    ...draft,
+                    visibility: f === "Shared" ? "shared" : "studio",
+                  })
+                }
+              />
+            )}
           </div>
         </Modal>
       )}

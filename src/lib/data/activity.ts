@@ -1,8 +1,9 @@
 /**
  * Founder-reachable activity reads and the activity/notification write path
- * (ADR-0005, ADR-0006). Founder verb allow-list lands in S14.
+ * (ADR-0005, ADR-0006). Founder feeds are an allow-list of verbs, scoped to
+ * their venture, with payloads stripped.
  */
-import { and, count, desc, eq, isNull } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import {
   activity,
@@ -17,6 +18,11 @@ import {
   type CurrentUser,
   type InternalUser,
 } from "@/lib/auth/resolve";
+import { canSeeVenture } from "@/lib/data/scope";
+import {
+  FOUNDER_ACTIVITY_VERBS,
+  type FounderActivityVerb,
+} from "@/lib/activity/founder-verbs";
 import {
   recipientsFor,
   type ActivityVerb,
@@ -44,6 +50,8 @@ export type PartnerActivity = {
 };
 
 export type FounderActivity = Omit<PartnerActivity, "payload">;
+
+export { FOUNDER_ACTIVITY_VERBS, type FounderActivityVerb };
 
 export type PartnerNotification = {
   id: string;
@@ -83,6 +91,12 @@ const feedColumns = {
 const FEED_LIMIT = 100;
 const INBOX_LIMIT = 50;
 
+function withoutPayload(row: PartnerActivity): FounderActivity {
+  const { payload, ...rest } = row;
+  void payload;
+  return rest;
+}
+
 export async function listVentureActivity(
   user: InternalUser,
   ventureId: string,
@@ -99,9 +113,21 @@ export async function listVentureActivity(
   executor: Executor = db,
 ): Promise<PartnerActivity[] | FounderActivity[]> {
   if (!isInternalUser(user)) {
-    // S14: allow-listed verbs only, scoped to user.ventureIds.
-    void ventureId;
-    return [];
+    if (!canSeeVenture(user, ventureId)) return [];
+    const rows = await executor
+      .select(feedColumns)
+      .from(activity)
+      .leftJoin(users, eq(activity.actorId, users.id))
+      .leftJoin(ventures, eq(activity.ventureId, ventures.id))
+      .where(
+        and(
+          eq(activity.ventureId, ventureId),
+          inArray(activity.verb, [...FOUNDER_ACTIVITY_VERBS]),
+        ),
+      )
+      .orderBy(desc(activity.createdAt))
+      .limit(FEED_LIMIT);
+    return rows.map(withoutPayload);
   }
   return executor
     .select(feedColumns)

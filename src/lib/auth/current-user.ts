@@ -43,16 +43,21 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   return resolveCurrentUser({ userId: user.id, role: user.role }, memberships);
 }
 
-export async function requirePartner(): Promise<InternalUser> {
+export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/signin");
+  return user;
+}
+
+export async function requirePartner(): Promise<InternalUser> {
+  const user = await requireUser();
   if (!isInternalUser(user)) {
     redirect(await founderHomePath(user));
   }
   return user;
 }
 
-async function founderHomePath(user: CurrentUser): Promise<string> {
+export async function founderHomePath(user: CurrentUser): Promise<string> {
   const ventureId = user.ventureIds[0];
   if (!ventureId) return "/signin";
   const [venture] = await db

@@ -1,6 +1,6 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
-import { getCurrentUser, isInternalUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import {
   authorizeDocUpload,
   parseUploadPayload,
@@ -35,8 +35,8 @@ export async function POST(request: Request) {
       request,
       onBeforeGenerateToken: async (_pathname, clientPayload) => {
         const user = await getCurrentUser();
-        if (!user || !isInternalUser(user)) {
-          throw new Error("Only a partner can upload a doc.");
+        if (!user) {
+          throw new Error("Sign in to upload a doc.");
         }
         let requested: {
           ventureId?: string;

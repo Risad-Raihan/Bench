@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requirePartner } from "@/lib/auth/current-user";
+import { isInternalUser, requireUser } from "@/lib/auth/current-user";
 import { listDocs } from "@/lib/data/docs";
 import { listDecisions } from "@/lib/data/decisions";
 import { listMentionedNotes, listNotes } from "@/lib/data/notes";
@@ -10,6 +10,8 @@ import {
   listStageEvents,
   listSwitchTargets,
   listVentureTasks,
+  type PartnerVenture,
+  type PartnerVentureTask,
 } from "@/lib/data/ventures";
 import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
@@ -30,7 +32,8 @@ export default async function VenturePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const user = await requirePartner();
+  const user = await requireUser();
+  const partner = isInternalUser(user);
   const { slug } = await params;
   const now = new Date();
 
@@ -88,10 +91,17 @@ export default async function VenturePage({
 
   const daysInStage = daysSince(venture.stageEnteredAt, now);
   const stale = isStale(venture.stageEnteredAt, now);
-  const stakeLabel = venture.equityPct != null ? `${Math.round(venture.equityPct * 100)}% AVL stake` : "AVL venture";
+  const partnerVenture = venture as PartnerVenture;
+  const stakeLabel =
+    partner && partnerVenture.equityPct != null
+      ? `${Math.round(partnerVenture.equityPct * 100)}% AVL stake`
+      : "AVL venture";
 
-  const lanes: VentureLaneData[] = BOARD_LANES.map((lane) => {
-    const laneTasks = taskRows.filter((t) => t.lane === lane.key);
+  const lanes: VentureLaneData[] = partner
+    ? BOARD_LANES.map((lane) => {
+        const laneTasks = (taskRows as PartnerVentureTask[]).filter(
+          (t) => t.lane === lane.key,
+        );
     return {
       key: lane.key,
       label: lane.label,
@@ -124,7 +134,8 @@ export default async function VenturePage({
           }),
       })),
     };
-  });
+  })
+    : [];
 
   const groupedNotes = groupVentureNotes({
     owned: noteRows.map((n) => ({ id: n.id, title: n.title })),
@@ -135,7 +146,7 @@ export default async function VenturePage({
     { label: "Overview" },
     { label: "Docs", count: docRows.length },
     { label: "Notes", count: groupedNotes.owned.length + groupedNotes.mentioned.length },
-    { label: "Tasks", count: taskRows.length },
+    ...(partner ? [{ label: "Tasks", count: taskRows.length }] : []),
     { label: "Calendar", count: eventsCount },
     { label: "Decisions", count: decisionRows.length },
     { label: "Activity", count: activityRows.length },
@@ -147,13 +158,17 @@ export default async function VenturePage({
       name={venture.name}
       color={color}
       sub={venture.oneLiner ?? ""}
-      tags={[
-        { label: stakeLabel },
-        { label: venture.ownerName ?? "Unassigned" },
-        { label: `${daysInStage} days in stage`, hot: stale },
-      ]}
+      tags={
+        partner
+          ? [
+              { label: stakeLabel },
+              { label: partnerVenture.ownerName ?? "Unassigned" },
+              { label: `${daysInStage} days in stage`, hot: stale },
+            ]
+          : [{ label: `${daysInStage} days in stage`, hot: stale }]
+      }
       stageLabel={STAGES[currentStageIndex]?.label ?? venture.stage}
-      stageMeta={stageMeta}
+      stageMeta={partner ? stageMeta : "—"}
       currentStage={venture.stage}
       openGateCount={currentStageGates.filter((g) => !g.doneAt).length}
       gates={gates}
@@ -201,7 +216,13 @@ export default async function VenturePage({
           date: formatDueDate(v.createdAt),
         })),
       }))}
-      activity={activityRows.map((row) => toActivityRowView(row, now))}
+      activity={activityRows.map((row) =>
+        toActivityRowView(
+          { ...row, payload: "payload" in row ? row.payload : null },
+          now,
+        ),
+      )}
+      partner={partner}
     />
   );
 }

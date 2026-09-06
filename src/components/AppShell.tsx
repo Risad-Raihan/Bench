@@ -23,16 +23,22 @@ const ROUTE_LABELS: Record<string, string> = Object.fromEntries(
 
 export function AppShell({
   children,
+  partner = true,
   unreadCount,
   notifications,
 }: {
   children: React.ReactNode;
-  unreadCount: number;
+  partner?: boolean;
+  unreadCount?: number;
   notifications: ActivityRowView[];
 }) {
   return (
     <NewVentureProvider>
-      <AppShellChrome unreadCount={unreadCount} notifications={notifications}>
+      <AppShellChrome
+        partner={partner}
+        unreadCount={unreadCount}
+        notifications={notifications}
+      >
         {children}
       </AppShellChrome>
     </NewVentureProvider>
@@ -41,11 +47,13 @@ export function AppShell({
 
 function AppShellChrome({
   children,
+  partner,
   unreadCount,
   notifications,
 }: {
   children: React.ReactNode;
-  unreadCount: number;
+  partner: boolean;
+  unreadCount?: number;
   notifications: ActivityRowView[];
 }) {
   const pathname = usePathname();
@@ -67,15 +75,20 @@ function AppShellChrome({
       }}
     >
       <AppBar
-        items={Object.keys(NAV_ROUTES)}
+        items={partner ? Object.keys(NAV_ROUTES) : []}
         active={active}
-        dimmed={inVenture}
-        onNavigate={(item) => router.push(NAV_ROUTES[item])}
-        onNewVenture={open}
+        dimmed={inVenture || !partner}
+        onNavigate={(item) => {
+          if (!partner) return;
+          router.push(NAV_ROUTES[item]);
+        }}
+        onNewVenture={partner ? open : undefined}
         onJump={() => {}}
         unreadCount={unreadCount}
         unreadMenu={
-          <NotificationInbox items={notifications} unread={unreadCount} />
+          partner ? (
+            <NotificationInbox items={notifications} unread={unreadCount ?? 0} />
+          ) : undefined
         }
         onMenuSelect={(item) => {
           if (item === "Log out") void signOut({ redirectTo: "/signin" });

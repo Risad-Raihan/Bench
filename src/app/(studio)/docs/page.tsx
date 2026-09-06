@@ -1,5 +1,7 @@
+import { requirePartner } from "@/lib/auth/current-user";
 import { PageContainer } from "@/components/PageContainer";
 
-export default function DocsPage() {
+export default async function DocsPage() {
+  await requirePartner();
   return <PageContainer />;
 }

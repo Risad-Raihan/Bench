@@ -1,7 +1,7 @@
 /**
  * Founder-reachable venture reads. Pages never touch `db` for these rows
- * (ADR-0006). Partner path matches the pre-choke-point queries. Founder
- * scoping and field-stripping land in S14.
+ * (ADR-0006). Partners see the full row; founders are scoped to
+ * `ventureIds` and never receive partner-only fields.
  */
 import { and, asc, count, eq, inArray, isNull, ne } from "drizzle-orm";
 import { db } from "@/db";
@@ -22,6 +22,7 @@ import {
   type CurrentUser,
   type InternalUser,
 } from "@/lib/auth/resolve";
+import { canSeeVenture } from "@/lib/data/scope";
 import type { Lane, TaskStatus } from "@/lib/lanes";
 import type { Stage } from "@/lib/pipeline-stages";
 
@@ -118,20 +119,36 @@ const partnerVentureColumns = {
   boardPosition: ventures.boardPosition,
 };
 
+const founderVentureColumns = {
+  id: ventures.id,
+  slug: ventures.slug,
+  name: ventures.name,
+  oneLiner: ventures.oneLiner,
+  color: ventures.color,
+  stage: ventures.stage,
+  status: ventures.status,
+  founderName: ventures.founderName,
+  stageEnteredAt: ventures.stageEnteredAt,
+  boardPosition: ventures.boardPosition,
+};
+
 export async function listVentures(
   user: InternalUser,
+  executor?: Executor,
 ): Promise<PartnerVenture[]>;
 export async function listVentures(
   user: CurrentUser,
+  executor?: Executor,
 ): Promise<PartnerVenture[] | FounderVenture[]>;
 export async function listVentures(
   user: CurrentUser,
+  executor: Executor = db,
 ): Promise<PartnerVenture[] | FounderVenture[]> {
   if (!isInternalUser(user)) {
-    // S14: founders have no pipeline; out-of-scope reads 404 at the page.
+    // Founders have no pipeline. The page redirects; this stays empty.
     return [];
   }
-  return db
+  return executor
     .select(partnerVentureColumns)
     .from(ventures)
     .leftJoin(users, eq(ventures.ownerId, users.id))
@@ -141,21 +158,28 @@ export async function listVentures(
 export async function getVenture(
   user: InternalUser,
   slug: string,
+  executor?: Executor,
 ): Promise<PartnerVenture | null>;
 export async function getVenture(
   user: CurrentUser,
   slug: string,
+  executor?: Executor,
 ): Promise<PartnerVenture | FounderVenture | null>;
 export async function getVenture(
   user: CurrentUser,
   slug: string,
+  executor: Executor = db,
 ): Promise<PartnerVenture | FounderVenture | null> {
   if (!isInternalUser(user)) {
-    // S14: restrict to user.ventureIds, strip partner-only fields, 404 out of scope.
-    void slug;
-    return null;
+    if (user.ventureIds.length === 0) return null;
+    const [row] = await executor
+      .select(founderVentureColumns)
+      .from(ventures)
+      .where(and(eq(ventures.slug, slug), inArray(ventures.id, user.ventureIds)))
+      .limit(1);
+    return row ?? null;
   }
-  const [row] = await db
+  const [row] = await executor
     .select(partnerVentureColumns)
     .from(ventures)
     .leftJoin(users, eq(ventures.ownerId, users.id))
@@ -209,7 +233,17 @@ export async function listStageEvents(
   user: CurrentUser,
   ventureId: string,
 ): Promise<PartnerStageEvent[] | FounderStageEvent[]> {
-  if (!isInternalUser(user)) return [];
+  if (!isInternalUser(user)) {
+    if (!canSeeVenture(user, ventureId)) return [];
+    return db
+      .select({
+        toStage: ventureStageEvents.toStage,
+        createdAt: ventureStageEvents.createdAt,
+      })
+      .from(ventureStageEvents)
+      .where(eq(ventureStageEvents.ventureId, ventureId))
+      .orderBy(asc(ventureStageEvents.createdAt));
+  }
   return db
     .select({
       toStage: ventureStageEvents.toStage,

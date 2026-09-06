@@ -45,10 +45,12 @@ export function NotesView({
   notes,
   active,
   ventures,
+  canCreate = true,
 }: {
   notes: NotesViewItem[];
   active: NotesViewActive | null;
   ventures: { id: string; name: string; color: string | null }[];
+  canCreate?: boolean;
 }) {
   const router = useRouter();
   const editorRef = useRef<NoteBodyHandle>(null);
@@ -115,7 +117,9 @@ export function NotesView({
         }}
       >
         <div style={{ padding: "14px 15px 0" }}>
-          <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
+          {canCreate ? (
+            <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
+          ) : null}
         </div>
         <NoteSidebar
           groups={sidebarGroups}

@@ -1,5 +1,6 @@
-import { describe, expectTypeOf, test } from "vitest";
-import type { FounderActivity, PartnerActivity, RecordActivityInput } from "./activity";
+import { describe, expect, expectTypeOf, test } from "vitest";
+import type { FounderActivity, FounderActivityVerb, PartnerActivity, RecordActivityInput } from "./activity";
+import { FOUNDER_ACTIVITY_VERBS } from "@/lib/activity/founder-verbs";
 import type { ActivityVerb } from "@/lib/activity/recipients";
 import type { FounderApplication, PartnerApplication } from "./applications";
 import type {
@@ -46,5 +47,20 @@ describe("recordActivity input", () => {
   test("verb is the ActivityVerb union", () => {
     expectTypeOf<RecordActivityInput["verb"]>().toEqualTypeOf<ActivityVerb>();
     expectTypeOf<"not-a-verb">().not.toExtend<RecordActivityInput["verb"]>();
+  });
+});
+
+describe("founder activity allow-list", () => {
+  test("excludes pass, engage, gates, tasks, and internal-note verbs", () => {
+    const verbs = new Set<string>(FOUNDER_ACTIVITY_VERBS);
+    expect(verbs.has("passed")).toBe(false);
+    expect(verbs.has("engaged")).toBe(false);
+    expect(verbs.has("cleared")).toBe(false);
+    expect(verbs.has("assigned")).toBe(false);
+    expect(verbs.has("mentioned")).toBe(false);
+    expect(verbs.has("stale")).toBe(false);
+    expect(verbs.has("uploaded")).toBe(true);
+    expect(verbs.has("created")).toBe(true);
+    expectTypeOf<FounderActivityVerb>().toExtend<ActivityVerb>();
   });
 });

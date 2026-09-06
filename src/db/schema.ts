@@ -109,8 +109,48 @@ export const users = pgTable("users", {
   avatarUrl: text("avatar_url"),
   role: userRole("role").notNull().default("partner"),
   googleRefreshToken: text("google_refresh_token"), // encrypt at rest
+  // Auth.js adapter field. Partners verify via Google; founders via magic link.
+  emailVerified: timestamp("email_verified", { withTimezone: true, mode: "date" }),
+  lastSignInAt: timestamp("last_sign_in_at", { withTimezone: true, mode: "date" }),
+  disabledAt: timestamp("disabled_at", { withTimezone: true, mode: "date" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+/* Auth.js adapter tables. JWT sessions — there is no `sessions` table (ADR-0001). */
+
+export const accounts = pgTable(
+  "accounts",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").$type<"oidc" | "oauth" | "email" | "webauthn">().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.provider, t.providerAccountId] }),
+  }),
+);
+
+export const verificationTokens = pgTable(
+  "verification_tokens",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { withTimezone: true, mode: "date" }).notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.identifier, t.token] }),
+  }),
+);
 
 /* ---------------------------------------------------------------------------
    VENTURES

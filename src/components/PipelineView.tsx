@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   Kpi,
   PageHeader,
@@ -55,6 +56,7 @@ export function PipelineView({
   kpis: PipelineKpis;
   stats: PipelineStat[];
 }) {
+  const router = useRouter();
   return (
     <>
       <PageHeader
@@ -89,6 +91,7 @@ export function PipelineView({
                 founder={v.founder}
                 flag={v.flag}
                 rise={i}
+                onClick={() => router.push(`/v/${v.slug}`)}
               />
             ))}
             {col.ventures.length === 0 && <AddButton>Nothing here yet</AddButton>}

@@ -18,6 +18,7 @@ import {
   ventures,
   type ventureStage,
 } from "./schema";
+import { PARTNERS } from "../lib/auth/partners";
 
 type Stage = (typeof ventureStage.enumValues)[number];
 
@@ -27,16 +28,11 @@ const daysAgo = (n: number) => new Date(now.getTime() - n * DAY_MS);
 const hoursAgo = (n: number) => new Date(now.getTime() - n * 60 * 60 * 1000);
 
 /* ---------------------------------------------------------------------------
-   USERS — the four partners. RM matches CURRENT_USER_EMAIL in
-   src/lib/current-user.ts.
+   USERS — the four partners. Same list as src/lib/auth/partners.ts; first
+   Google sign-in links onto these rows by email.
 --------------------------------------------------------------------------- */
 
-const USER_SEED = [
-  { email: "risad@aponvlab.io", name: "Risad Mahmud", initials: "RM" },
-  { email: "rashedun@aponvlab.io", name: "Rashedun Nabi", initials: "RN" },
-  { email: "saif@aponvlab.io", name: "Saif Rashid", initials: "SR" },
-  { email: "mufassal@aponvlab.io", name: "Mufassal Saif", initials: "MS" },
-] as const;
+const USER_SEED = PARTNERS;
 
 /* ---------------------------------------------------------------------------
    GATE CHECKLISTS — from the gate rail in design-system/ui_kits/bench,

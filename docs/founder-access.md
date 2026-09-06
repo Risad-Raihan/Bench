@@ -29,8 +29,8 @@ following must be done.
 
 ## 1. Real session
 
-`src/lib/current-user.ts` is a hardcoded email constant. It must become a real
-session (NextAuth) that resolves `{ id, role }`. Every access decision below
+`src/lib/auth/current-user.ts` exposes `getCurrentUser()`, which resolves a
+NextAuth JWT to `{ id, role, ventureIds }`. Every access decision below
 branches on `role === "founder"`.
 
 ## 2. Which venture(s) can this user see

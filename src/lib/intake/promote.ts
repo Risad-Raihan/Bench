@@ -115,7 +115,7 @@ export async function createVentureFromApplication(
       founderEmail: application.founderEmail,
       // The site's Apply form has no phone field today.
       founderPhone: null,
-      // System-created: there is no real session yet (see current-user.ts).
+      // Intake has no session; the application is the actor.
       createdBy: null,
     })
     .returning();

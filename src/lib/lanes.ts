@@ -20,3 +20,16 @@ export const BOARD_COLUMNS: { key: TaskStatus; label: string }[] = [
   { key: "blocked", label: "Blocked" },
   { key: "done", label: "Done" },
 ];
+
+const BOARD_LANE_KEYS = new Set<Lane>(BOARD_LANES.map((l) => l.key));
+const BOARD_STATUS_KEYS = new Set<TaskStatus>(
+  BOARD_COLUMNS.map((c) => c.key),
+);
+
+export function isBoardLane(value: string): value is Lane {
+  return BOARD_LANE_KEYS.has(value as Lane) && value !== "ops";
+}
+
+export function isBoardStatus(value: string): value is TaskStatus {
+  return BOARD_STATUS_KEYS.has(value as TaskStatus);
+}

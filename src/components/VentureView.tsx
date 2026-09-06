@@ -8,18 +8,25 @@ import {
   VentureHeader,
   VentureTabs,
 } from "../../design-system/components/venture/VentureHeader.jsx";
-import {
-  KanbanColumn,
-  Lane,
-  TaskCard,
-} from "../../design-system/components/kanban/TaskCard.jsx";
 import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
 import { PageContainer } from "@/components/PageContainer";
+import {
+  TasksBoard,
+  type AssignablePartner,
+} from "@/components/TasksBoard";
+import type { Priority } from "@/lib/data/tasks";
+import type { Lane, TaskStatus } from "@/lib/lanes";
 
 export interface VentureTaskCardData {
   id: string;
   title: string;
+  description: string | null;
+  lane: Lane;
+  status: TaskStatus;
+  priority: Priority;
   who: string;
+  assigneeId: string | null;
+  dueDate: string | null;
   due?: string;
   note?: string;
   fromNote?: boolean;
@@ -27,11 +34,11 @@ export interface VentureTaskCardData {
 }
 
 export interface VentureLaneData {
-  key: string;
+  key: Lane;
   label: string;
   color: string;
   count: number;
-  columns: { key: string; label: string; tasks: VentureTaskCardData[] }[];
+  columns: { key: TaskStatus; label: string; tasks: VentureTaskCardData[] }[];
 }
 
 export interface VentureSwitchTarget {
@@ -86,6 +93,8 @@ export function VentureView({
   tabs,
   switchTargets,
   lanes,
+  ventureId,
+  partners,
 }: {
   slug: string;
   name: string;
@@ -98,6 +107,8 @@ export function VentureView({
   tabs: VentureTabData[];
   switchTargets: VentureSwitchTarget[];
   lanes: VentureLaneData[];
+  ventureId: string;
+  partners: AssignablePartner[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("Overview");
@@ -193,28 +204,12 @@ export function VentureView({
         accent={color}
       />
       {tab === "Tasks" ? (
-        <div style={{ padding: 14 }}>
-          {lanes.map((lane, i) => (
-            <Lane key={lane.key} name={lane.label} color={lane.color} count={lane.count} rise={i}>
-              {lane.columns.map((col) => (
-                <KanbanColumn key={col.key} label={col.label}>
-                  {col.tasks.map((t) => (
-                    <TaskCard
-                      key={t.id}
-                      title={t.title}
-                      who={t.who}
-                      due={t.due}
-                      note={t.note}
-                      fromNote={t.fromNote}
-                      done={t.done}
-                      color={lane.color}
-                    />
-                  ))}
-                </KanbanColumn>
-              ))}
-            </Lane>
-          ))}
-        </div>
+        <TasksBoard
+          slug={slug}
+          ventureId={ventureId}
+          lanes={lanes}
+          partners={partners}
+        />
       ) : (
         <PageContainer>
           <EmptyState hint={emptyCopy.hint}>{emptyCopy.label}</EmptyState>

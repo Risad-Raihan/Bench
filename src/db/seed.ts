@@ -389,7 +389,7 @@ async function main() {
     const venture = ventureBySlug.get(t.ventureSlug)!;
     const assignee = userByInitials.get(t.who)!;
     const status = COL_TO_STATUS[t.col];
-    const groupKey = `${venture.id}:${status}`;
+    const groupKey = `${venture.id}:${LANE_MAP[t.lane]}:${status}`;
     return {
       ventureId: venture.id,
       title: t.title,

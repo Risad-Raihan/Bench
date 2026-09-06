@@ -79,11 +79,14 @@ export type FounderStageEvent = Omit<PartnerStageEvent, "reason">;
 export type PartnerVentureTask = {
   id: string;
   title: string;
+  description: string | null;
   lane: Lane;
   status: TaskStatus;
+  priority: "low" | "normal" | "high";
   position: number;
   dueDate: string | null;
   originNoteId: string | null;
+  assigneeId: string | null;
   assigneeInitials: string | null;
 };
 
@@ -230,17 +233,20 @@ export async function listVentureTasks(
     .select({
       id: tasks.id,
       title: tasks.title,
+      description: tasks.description,
       lane: tasks.lane,
       status: tasks.status,
+      priority: tasks.priority,
       position: tasks.position,
       dueDate: tasks.dueDate,
       originNoteId: tasks.originNoteId,
+      assigneeId: tasks.assigneeId,
       assigneeInitials: users.initials,
     })
     .from(tasks)
     .leftJoin(users, eq(tasks.assigneeId, users.id))
     .where(and(eq(tasks.ventureId, ventureId), isNull(tasks.archivedAt)))
-    .orderBy(asc(tasks.lane), asc(tasks.position));
+    .orderBy(asc(tasks.lane), asc(tasks.status), asc(tasks.position));
 }
 
 export async function listPipelineTasks(
@@ -369,9 +375,10 @@ export async function insertGateItemsForVenture(
 
 export async function getVentureById(
   ventureId: string,
-  executor: Executor = db,
+  executor?: Executor,
 ) {
-  const [row] = await executor
+  const run = executor ?? db;
+  const [row] = await run
     .select()
     .from(ventures)
     .where(eq(ventures.id, ventureId))

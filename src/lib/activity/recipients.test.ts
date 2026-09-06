@@ -71,6 +71,9 @@ describe("recipientsFor", () => {
       recipientsFor("created", { actorId: actor, ownerId: owner }),
     ).toEqual([]);
     expect(
+      recipientsFor("updated", { actorId: actor, assigneeId: assignee }),
+    ).toEqual([]);
+    expect(
       recipientsFor("not-a-verb", { actorId: actor, assigneeId: assignee }),
     ).toEqual([]);
   });
@@ -81,6 +84,7 @@ describe("ActivityVerb", () => {
     expectTypeOf<"assigned">().toExtend<ActivityVerb>();
     expectTypeOf<"engaged">().toExtend<ActivityVerb>();
     expectTypeOf<"stale">().toExtend<ActivityVerb>();
+    expectTypeOf<"updated">().toExtend<ActivityVerb>();
     expectTypeOf<"not-a-verb">().not.toExtend<ActivityVerb>();
   });
 });

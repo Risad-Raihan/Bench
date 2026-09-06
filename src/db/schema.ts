@@ -366,16 +366,18 @@ export const tasks = pgTable(
     title: text("title").notNull(),
     description: text("description"),
 
-    lane: lane("lane").notNull().default("ops"),
+    // No default — every create path must pick a board lane. `ops` stays
+    // in the enum as a dead value (CONTEXT.md).
+    lane: lane("lane").notNull(),
     status: taskStatus("status").notNull().default("todo"),
     priority: priority("priority").notNull().default("normal"),
 
     assigneeId: uuid("assignee_id").references(() => users.id),
     dueDate: date("due_date"),
 
-    // Fractional index for drag ordering within a column. Insert between two
-    // cards by averaging their positions. Rebalance the column when the gap
-    // drops below 0.0001.
+    // Fractional index scoped to the visible board cell (venture, lane,
+    // status). Insert by averaging neighbours; rebalance the cell when the
+    // gap drops below 0.0001.
     position: doublePrecision("position").notNull().default(1000),
 
     // Set when the task was born inside a note. Lets you jump back to the
@@ -391,8 +393,13 @@ export const tasks = pgTable(
     archivedAt: timestamp("archived_at", { withTimezone: true }),
   },
   (t) => ({
-    // Drives the venture board.
-    boardIdx: index("tasks_board_idx").on(t.ventureId, t.status, t.position),
+    // Drives the venture board cell (lane × status).
+    boardIdx: index("tasks_board_idx").on(
+      t.ventureId,
+      t.lane,
+      t.status,
+      t.position,
+    ),
     // Drives My Work across every venture.
     assigneeIdx: index("tasks_assignee_idx").on(t.assigneeId, t.status, t.dueDate),
   })

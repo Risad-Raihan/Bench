@@ -164,9 +164,10 @@ async function recipientContext(
 
 export async function recordActivity(
   input: RecordActivityInput,
-  executor: Executor = db,
+  executor?: Executor,
 ): Promise<{ id: string }> {
-  const [row] = await executor
+  const run = executor ?? db;
+  const [row] = await run
     .insert(activity)
     .values({
       actorId: input.actorId,
@@ -182,10 +183,10 @@ export async function recordActivity(
 
   const recipientIds = recipientsFor(
     input.verb,
-    await recipientContext(input, executor),
+    await recipientContext(input, run),
   );
   if (recipientIds.length > 0) {
-    await executor.insert(notifications).values(
+    await run.insert(notifications).values(
       recipientIds.map((userId) => ({
         userId,
         activityId: row.id,

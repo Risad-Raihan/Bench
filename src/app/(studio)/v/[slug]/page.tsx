@@ -15,6 +15,7 @@ import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
 import { BOARD_COLUMNS, BOARD_LANES } from "@/lib/lanes";
 import { formatDayMonth, formatDueDate } from "@/lib/format";
+import { listAssignablePartners } from "@/lib/data/tasks";
 import {
   VentureView,
   type VentureGate,
@@ -36,7 +37,7 @@ export default async function VenturePage({
   const color = ventureColor(venture.color);
   const currentStageIndex = STAGES.findIndex((s) => s.stage === venture.stage);
 
-  const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, notesCount, eventsCount, decisionsCount] =
+  const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, notesCount, eventsCount, decisionsCount, partners] =
     await Promise.all([
       listSwitchTargets(user, venture.id),
       listGateItems(user, [venture.id]),
@@ -46,6 +47,7 @@ export default async function VenturePage({
       countNotes(user, venture.id),
       countEvents(user, venture.id),
       countDecisions(user, venture.id),
+      listAssignablePartners(user),
     ]);
 
   /* Gate rail: cleared stages get the date they were left (the createdAt of
@@ -102,7 +104,13 @@ export default async function VenturePage({
             return {
               id: t.id,
               title: t.title,
+              description: t.description,
+              lane: t.lane,
+              status: t.status,
+              priority: t.priority,
               who: t.assigneeInitials ?? "—",
+              assigneeId: t.assigneeId,
+              dueDate: t.dueDate,
               fromNote,
               done: t.status === "done",
               due: !fromNote && overdue && due ? formatDueDate(due) : undefined,
@@ -143,6 +151,8 @@ export default async function VenturePage({
         color: ventureColor(v.color),
       }))}
       lanes={lanes}
+      ventureId={venture.id}
+      partners={partners}
     />
   );
 }

@@ -15,6 +15,7 @@ export const ACTIVITY_VERBS = [
   "engaged",
   "passed",
   "created",
+  "updated",
   "stale",
 ] as const;
 

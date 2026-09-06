@@ -4,7 +4,8 @@
  */
 import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { tasks, users } from "@/db/schema";
+import { tasks, users, ventures } from "@/db/schema";
+import type { MyWorkTask } from "@/lib/my-work";
 import {
   isInternalUser,
   type CurrentUser,
@@ -88,6 +89,36 @@ export async function listAssignablePartners(
       ),
     )
     .orderBy(asc(users.name));
+}
+
+export async function listMyWorkTasks(
+  user: CurrentUser,
+  executor?: Executor,
+): Promise<MyWorkTask[]> {
+  const run = executor ?? db;
+  if (!isInternalUser(user)) return [];
+  return run
+    .select({
+      id: tasks.id,
+      title: tasks.title,
+      status: tasks.status,
+      dueDate: tasks.dueDate,
+      position: tasks.position,
+      ventureId: tasks.ventureId,
+      ventureName: ventures.name,
+      ventureColor: ventures.color,
+      ventureSlug: ventures.slug,
+      lane: tasks.lane,
+    })
+    .from(tasks)
+    .leftJoin(ventures, eq(tasks.ventureId, ventures.id))
+    .where(
+      and(
+        eq(tasks.assigneeId, user.id),
+        ne(tasks.status, "done"),
+        isNull(tasks.archivedAt),
+      ),
+    );
 }
 
 export async function getTask(

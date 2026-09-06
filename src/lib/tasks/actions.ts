@@ -25,9 +25,10 @@ function fail(err: unknown, label: string): TaskActionResult {
   };
 }
 
-function revalidate(slug: string) {
+function revalidate(slug?: string | null) {
   revalidatePath("/");
-  revalidatePath(`/v/${slug}`);
+  revalidatePath("/my-work");
+  if (slug) revalidatePath(`/v/${slug}`);
 }
 
 export async function createTaskAction(input: {

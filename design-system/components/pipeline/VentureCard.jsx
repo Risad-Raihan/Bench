@@ -5,7 +5,7 @@ export function GateBar({total=6,filled=0,color="var(--copper)",height=3,gap=2.5
   </div>);
 }
 export function WhoChip({initials,size=19}){
-  return (<div style={{width:size,height:size,border:"1px solid var(--line2)",borderRadius:2,display:"grid",placeItems:"center",fontSize:11,color:"#a89890",fontFamily:"var(--font-mono)",flex:"none"}}>{initials}</div>);
+  return (<div style={{width:size,height:size,border:"1px solid var(--line2)",borderRadius:2,display:"grid",placeItems:"center",fontSize:11,color:"var(--dim)",fontFamily:"var(--font-mono)",flex:"none"}}>{initials}</div>);
 }
 export function VentureCard({name,caption,color="var(--copper)",gates=0,gateTotal=6,who,founder,flag,onClick,rise,showGates=true,showMeta=true}){
   const [h,setH]=React.useState(false);

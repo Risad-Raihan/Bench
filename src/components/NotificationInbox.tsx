@@ -32,7 +32,7 @@ export function NotificationInbox({
         background: "var(--bg2)",
         border: "1px solid var(--line)",
         borderRadius: 3,
-        boxShadow: "0 12px 28px rgba(0,0,0,.55)",
+        boxShadow: "var(--shadow-menu)",
         zIndex: 60,
       }}
     >

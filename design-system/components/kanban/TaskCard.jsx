@@ -6,7 +6,7 @@ export function TaskCard({title,who,note,due,fromNote=false,done=false,color="va
       transition:"transform var(--dur-fast),background var(--dur-fast),border-color var(--dur-fast)",transform:h?"translateX(2px)":"none"}}>
     <h5 style={{fontSize:12.5,fontWeight:500,lineHeight:1.35,margin:0,color:done?"var(--faint)":undefined,textDecoration:done?"line-through":undefined}}>{title}</h5>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:8,fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".06em",color:"var(--dim)"}}>
-      <span style={{width:19,height:19,border:"1px solid var(--line2)",borderRadius:2,display:"grid",placeItems:"center",fontSize:11,color:"#a89890"}}>{who}</span>
+      <span style={{width:19,height:19,border:"1px solid var(--line2)",borderRadius:2,display:"grid",placeItems:"center",fontSize:11,color:"var(--dim)"}}>{who}</span>
       <span style={{color:fromNote?"var(--violet)":due?"var(--amber)":undefined,fontVariantNumeric:"tabular-nums"}}>{fromNote?"FROM NOTE":(due||note||"—")}</span>
     </div>
   </div>);

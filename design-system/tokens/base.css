@@ -1,7 +1,13 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{background:var(--root);color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-14);-webkit-font-smoothing:antialiased}
+:root{color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+body{background:var(--root);color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-14);-webkit-font-smoothing:antialiased;caret-color:var(--caret)}
 .num,[data-num]{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 a{color:var(--dim);text-decoration:none;transition:color var(--dur-base)}
 a:hover{color:var(--copper)}
-::selection{background:var(--copper-tint);color:var(--ink)}
+::selection{background:var(--selection);color:var(--ink)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--scrollbar-track)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:var(--radius-2);border:2px solid var(--scrollbar-track)}
+*{scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track)}

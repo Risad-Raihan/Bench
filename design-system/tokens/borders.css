@@ -10,6 +10,13 @@
   --accent-edge-sm:2px; /* task card / event / quote left edge */
   --rule-thick:2px;   /* active tab + gate progress rule */
 
-  /* the system has no shadows except one: the floating slash menu */
+  /* the system has no shadows except one: the floating slash menu.
+     light mode is forced to add a second — a drawer over a cream list
+     cannot be read by surface step alone. */
   --shadow-menu:0 14px 34px rgba(0,0,0,.6);
+  --shadow-panel:-14px 0 34px rgba(0,0,0,.5);
+}
+:root[data-theme="light"]{
+  --shadow-menu:0 10px 26px rgba(60,44,34,.16);   /* warm shadow, not grey */
+  --shadow-panel:-14px 0 34px rgba(60,44,34,.12);
 }

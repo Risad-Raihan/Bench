@@ -42,7 +42,7 @@ export function ActivityRow({who,text,when,color="var(--ash)",compact=false}){
   const [h,setH]=React.useState(false);
   return (<div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
     style={{display:"grid",gridTemplateColumns:(compact?"17px":"19px")+" 1fr 44px",gap:compact?9:12,alignItems:"center",padding:compact?"6px 11px":"9px 13px",borderBottom:"1px solid var(--divider)",background:h?"var(--hover-row)":undefined,transition:"background var(--dur-instant)"}}>
-    <span style={{width:compact?17:19,height:compact?17:19,border:"1px solid var(--line2)",borderRadius:2,display:"grid",placeItems:"center",fontFamily:"var(--font-mono)",fontSize:11,color:"#a89890"}}>{who}</span>
+    <span style={{width:compact?17:19,height:compact?17:19,border:"1px solid var(--line2)",borderRadius:2,display:"grid",placeItems:"center",fontFamily:"var(--font-mono)",fontSize:11,color:"var(--dim)"}}>{who}</span>
     <span style={{fontSize:compact?12:12.5,color:"var(--meta-ink)",display:"flex",alignItems:"center",gap:8,overflow:"hidden"}}>
       <s style={{width:5,height:5,borderRadius:1,background:color,textDecoration:"none",flex:"none"}}/>
       <em style={{fontStyle:"normal",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{text}</em></span>

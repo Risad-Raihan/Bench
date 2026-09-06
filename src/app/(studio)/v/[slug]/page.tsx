@@ -20,6 +20,7 @@ import { formatBytes, formatDayMonth, formatDueDate, typeGlyph } from "@/lib/for
 import { groupVentureNotes } from "@/lib/notes/groups";
 import { listAssignablePartners } from "@/lib/data/tasks";
 import { listVentureActivity } from "@/lib/data/activity";
+import { listVentureAccess } from "@/lib/data/members";
 import { toActivityRowView } from "@/lib/activity/view";
 import {
   VentureView,
@@ -43,7 +44,7 @@ export default async function VenturePage({
   const color = ventureColor(venture.color);
   const currentStageIndex = STAGES.findIndex((s) => s.stage === venture.stage);
 
-  const [switchTargets, gateRows, stageEventRows, taskRows, docRows, noteRows, mentionedRows, eventsCount, decisionRows, partners, activityRows] =
+  const [switchTargets, gateRows, stageEventRows, taskRows, docRows, noteRows, mentionedRows, eventsCount, decisionRows, partners, activityRows, accessRows] =
     await Promise.all([
       listSwitchTargets(user, venture.id),
       listGateItems(user, [venture.id]),
@@ -56,6 +57,7 @@ export default async function VenturePage({
       listDecisions(user, venture.id),
       listAssignablePartners(user),
       listVentureActivity(user, venture.id),
+      partner ? listVentureAccess(user, venture.id) : Promise.resolve([]),
     ]);
 
   /* Gate rail: cleared stages get the date they were left (the createdAt of
@@ -222,6 +224,15 @@ export default async function VenturePage({
           now,
         ),
       )}
+      members={accessRows.map((m) => ({
+        userId: m.userId,
+        name: m.name,
+        email: m.email,
+        initials: m.initials,
+        memberRole: m.memberRole,
+        status: m.status,
+        lastSignInAt: m.lastSignInAt?.toISOString() ?? null,
+      }))}
       partner={partner}
     />
   );

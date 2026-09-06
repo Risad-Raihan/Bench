@@ -1,5 +1,5 @@
 import React from "react";
-export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decisions"],active="Pipeline",dimmed=false,mark="B",onNavigate,onNewVenture,onJump,newLabel="+ New venture",jumpLabel="Jump to",jumpKey="⌘K",menuItems=["Profile","Settings","Log out"],onMenuSelect}){
+export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decisions"],active="Pipeline",dimmed=false,mark="B",onNavigate,onNewVenture,onJump,newLabel="+ New venture",jumpLabel="Jump to",jumpKey="⌘K",menuItems=["Profile","Settings","Log out"],onMenuSelect,unreadCount}){
   const [nh,setNh]=React.useState(false);
   const [open,setOpen]=React.useState(false);
   const [hov,setHov]=React.useState(null);
@@ -34,6 +34,9 @@ export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decision
           style={{fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",padding:"5px 11px",borderRadius:2,cursor:"pointer",
             border:"1px solid var(--copper)",color:"var(--copper)",background:nh?"var(--copper-tint)":"var(--copper-wash)",transition:"background var(--dur-fast)",
             whiteSpace:"nowrap",flex:"none"}}>{newLabel}</div>}
+        {unreadCount!=null&&<div title="Unread" aria-label={`${unreadCount} unread`}
+          style={{fontFamily:"var(--font-mono)",fontSize:11,fontVariantNumeric:"tabular-nums",padding:"5px 10px",borderRadius:2,flex:"none",
+            border:"1px solid var(--line)",color:unreadCount>0?"var(--amber)":"var(--faint)"}}>{unreadCount}</div>}
         <div onClick={onJump} style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--faint)",border:"1px solid var(--line)",padding:"5px 10px",borderRadius:2,display:"flex",gap:26,cursor:"pointer",whiteSpace:"nowrap",flex:"none"}}><span>{jumpLabel}</span><kbd>{jumpKey}</kbd></div>
       </div>
     </div>);

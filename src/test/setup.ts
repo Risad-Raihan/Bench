@@ -29,9 +29,9 @@
  *    follow-up read of the rows that module is responsible for). Do not
  *    spy on internal helpers or assert call sequences.
  *
- * Helpers for (2) belong in `src/test/db.ts` next to this file, imported
- * only by tests that actually need a database. They are not here yet
- * because no DB test exists.
+ * Helpers for (2) live in `src/test/db.ts`, imported only by tests that
+ * actually need a database. Those tests skip when `TEST_DATABASE_URL`
+ * is unset so `npm test` stays green without a test branch.
  */
 
 export {};

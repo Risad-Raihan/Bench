@@ -17,7 +17,13 @@ const ROUTE_LABELS: Record<string, string> = Object.fromEntries(
   Object.entries(NAV_ROUTES).map(([label, route]) => [route, label]),
 );
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  unreadCount,
+}: {
+  children: React.ReactNode;
+  unreadCount: number;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const inVenture = pathname.startsWith("/v/");
@@ -42,6 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         onNavigate={(item) => router.push(NAV_ROUTES[item])}
         onNewVenture={() => {}}
         onJump={() => {}}
+        unreadCount={unreadCount}
         onMenuSelect={(item) => {
           if (item === "Log out") void signOut({ redirectTo: "/signin" });
         }}

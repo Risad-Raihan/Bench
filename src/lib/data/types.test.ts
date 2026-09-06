@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, test } from "vitest";
-import type { FounderActivity, PartnerActivity } from "./activity";
+import type { FounderActivity, PartnerActivity, RecordActivityInput } from "./activity";
+import type { ActivityVerb } from "@/lib/activity/recipients";
 import type { FounderApplication, PartnerApplication } from "./applications";
 import type {
   FounderStageEvent,
@@ -35,5 +36,12 @@ describe("founder-shaped return types omit partner-only fields", () => {
     expectTypeOf<FounderApplication>().not.toHaveProperty("rawPayload");
     expectTypeOf<PartnerActivity>().toHaveProperty("payload");
     expectTypeOf<FounderActivity>().not.toHaveProperty("payload");
+  });
+});
+
+describe("recordActivity input", () => {
+  test("verb is the ActivityVerb union", () => {
+    expectTypeOf<RecordActivityInput["verb"]>().toEqualTypeOf<ActivityVerb>();
+    expectTypeOf<"not-a-verb">().not.toExtend<RecordActivityInput["verb"]>();
   });
 });

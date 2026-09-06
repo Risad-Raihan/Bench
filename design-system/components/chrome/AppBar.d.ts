@@ -19,5 +19,7 @@ export interface AppBarProps {
   /** account menu that hangs from the mark on click — left-aligned under the square */
   menuItems?: string[];
   onMenuSelect?: (item: string) => void;
+  /** unread notification count from `notifications` (null read_at). Amber when > 0. Omit to hide. */
+  unreadCount?: number;
 }
 export function AppBar(props: AppBarProps): JSX.Element;

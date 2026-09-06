@@ -1,0 +1,1 @@
+ALTER TABLE "docs" ADD CONSTRAINT "docs_supersedes_id_docs_id_fk" FOREIGN KEY ("supersedes_id") REFERENCES "public"."docs"("id") ON DELETE set null ON UPDATE no action;

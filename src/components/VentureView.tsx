@@ -15,6 +15,7 @@ import {
   TasksBoard,
   type AssignablePartner,
 } from "@/components/TasksBoard";
+import { DocsView, type DocsTabFile } from "@/components/DocsView";
 import { createNoteAction } from "@/lib/notes/actions";
 import type { Priority } from "@/lib/data/tasks";
 import type { Lane, TaskStatus } from "@/lib/lanes";
@@ -100,6 +101,7 @@ export function VentureView({
   notes,
   mentionedNotes,
   decisions,
+  docs,
 }: {
   slug: string;
   name: string;
@@ -125,6 +127,7 @@ export function VentureView({
     rationale?: string | null;
     sourceNoteId?: string | null;
   }[];
+  docs?: DocsTabFile[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("Overview");
@@ -234,6 +237,8 @@ export function VentureView({
           notes={notes}
           mentioned={mentionedNotes ?? []}
         />
+      ) : tab === "Docs" ? (
+        <DocsView slug={slug} ventureId={ventureId} files={docs ?? []} />
       ) : tab === "Decisions" ? (
         <VentureDecisionsList
           decisions={decisions ?? []}

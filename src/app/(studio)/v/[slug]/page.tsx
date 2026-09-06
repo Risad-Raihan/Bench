@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requirePartner } from "@/lib/auth/current-user";
-import { countDocs } from "@/lib/data/docs";
+import { listDocs } from "@/lib/data/docs";
 import { listDecisions } from "@/lib/data/decisions";
 import { listMentionedNotes, listNotes } from "@/lib/data/notes";
 import {
@@ -14,7 +14,7 @@ import {
 import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
 import { BOARD_COLUMNS, BOARD_LANES } from "@/lib/lanes";
-import { formatDayMonth, formatDueDate } from "@/lib/format";
+import { formatBytes, formatDayMonth, formatDueDate, typeGlyph } from "@/lib/format";
 import { groupVentureNotes } from "@/lib/notes/groups";
 import { listAssignablePartners } from "@/lib/data/tasks";
 import {
@@ -38,13 +38,13 @@ export default async function VenturePage({
   const color = ventureColor(venture.color);
   const currentStageIndex = STAGES.findIndex((s) => s.stage === venture.stage);
 
-  const [switchTargets, gateRows, stageEventRows, taskRows, docsCount, noteRows, mentionedRows, eventsCount, decisionRows, partners] =
+  const [switchTargets, gateRows, stageEventRows, taskRows, docRows, noteRows, mentionedRows, eventsCount, decisionRows, partners] =
     await Promise.all([
       listSwitchTargets(user, venture.id),
       listGateItems(user, [venture.id]),
       listStageEvents(user, venture.id),
       listVentureTasks(user, venture.id),
-      countDocs(user, venture.id),
+      listDocs(user, venture.id),
       listNotes(user, venture.id),
       listMentionedNotes(user, venture.id),
       countEvents(user, venture.id),
@@ -130,7 +130,7 @@ export default async function VenturePage({
 
   const tabs = [
     { label: "Overview" },
-    { label: "Docs", count: docsCount },
+    { label: "Docs", count: docRows.length },
     { label: "Notes", count: groupedNotes.owned.length + groupedNotes.mentioned.length },
     { label: "Tasks", count: taskRows.length },
     { label: "Calendar", count: eventsCount },
@@ -170,6 +170,24 @@ export default async function VenturePage({
         source: d.sourceNoteTitle ?? undefined,
         rationale: d.rationale,
         sourceNoteId: d.sourceNoteId,
+      }))}
+      docs={docRows.map((d) => ({
+        id: d.id,
+        name: d.name,
+        type: typeGlyph(d.mimeType, d.name),
+        mimeType: d.mimeType,
+        size: formatBytes(d.sizeBytes),
+        who: d.uploadedByInitials ?? "—",
+        date: formatDueDate(d.createdAt),
+        folder: d.folder,
+        visibility: d.visibility,
+        versionCount: d.versionCount,
+        versions: d.versions.map((v, i) => ({
+          id: v.id,
+          version: d.versionCount - 1 - i,
+          who: v.uploadedByInitials ?? "—",
+          date: formatDueDate(v.createdAt),
+        })),
       }))}
     />
   );

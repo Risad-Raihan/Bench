@@ -13,6 +13,7 @@ import {
   index,
   uniqueIndex,
   primaryKey,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 /* ---------------------------------------------------------------------------
@@ -272,7 +273,9 @@ export const docs = pgTable(
     // "studio" (default) is internal-only; "shared" is visible to founder users.
     visibility: visibility("visibility").notNull().default("studio"),
     // Version chain: a new upload points at the doc it supersedes.
-    supersedesId: uuid("supersedes_id"),
+    supersedesId: uuid("supersedes_id").references((): AnyPgColumn => docs.id, {
+      onDelete: "set null",
+    }),
     uploadedBy: uuid("uploaded_by").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     archivedAt: timestamp("archived_at", { withTimezone: true }),

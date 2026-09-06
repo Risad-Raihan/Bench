@@ -105,10 +105,8 @@ export async function POST(req: Request) {
       const safeName =
         file.name.replace(/[^\w.\-]+/g, "_").slice(0, 120) || "deck";
       const key = `applications/${crypto.randomUUID()}/${safeName}`;
-      // access: "public" is fine for now; a signed-URL scheme is the eventual
-      // right answer for founder-uploaded decks.
       const blob = await put(key, file, {
-        access: "public",
+        access: "private",
         contentType: file.type || "application/octet-stream",
       });
       deckUpload = {

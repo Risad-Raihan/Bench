@@ -43,6 +43,13 @@
       "when": 1788678300748,
       "tag": "0005_red_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788681318361,
+      "tag": "0006_common_lord_tyger",
+      "breakpoints": true
     }
   ]
 }

@@ -9,7 +9,7 @@ export const STAGES: { stage: Stage; label: string; color: string }[] = [
   { stage: "meet", label: "Meet", color: "var(--copper)" },
   { stage: "validate", label: "Validate", color: "var(--magenta)" },
   { stage: "build", label: "Build", color: "var(--violet)" },
-  { stage: "form", label: "Form", color: "var(--copper)" },
+  { stage: "form", label: "Form", color: "var(--amber)" },
   { stage: "grow", label: "Grow", color: "var(--teal)" },
 ];
 

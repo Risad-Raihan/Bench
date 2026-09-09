@@ -36,13 +36,17 @@ export function AddButton({children="+ Venture",onClick,icon}){
     style={{width:"100%",border:"1px dashed "+(h?"var(--line2)":"var(--line)"),background:"transparent",color:h?"var(--dim)":"var(--ink-ghost3)",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",padding:9,cursor:"pointer",transition:"var(--dur-fast)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7}}>{icon&&<Icon glyph={icon} size={12}/>}{children}</button>);
 }
 export function StageColumn({stage,count,progress=0,color="var(--copper)",steps=5,children}){
+  const tint=(pct)=>`color-mix(in srgb, ${color} ${pct}%, transparent)`;
   return (<div style={{background:"var(--bg2)",minHeight:290}}>
-    <div style={{padding:"12px 13px 10px",borderBottom:"1px solid var(--grid)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",fontFamily:"var(--font-mono)"}}>
-        <i style={{fontStyle:"normal",fontSize:11,letterSpacing:".18em",textTransform:"uppercase",color:"var(--dim)"}}>{stage}</i>
+    <div style={{padding:"11px 13px 10px",borderBottom:"1px solid var(--grid)",
+      background:`linear-gradient(180deg, ${tint(9)}, transparent)`}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontFamily:"var(--font-mono)"}}>
+        <span style={{fontSize:10,letterSpacing:".14em",textTransform:"uppercase",color,
+          background:tint(15),border:`1px solid ${tint(26)}`,
+          padding:"3px 8px 4px",borderRadius:3,lineHeight:1}}>{stage}</span>
         <b style={{fontSize:14,fontWeight:400,color:"var(--faint)",fontVariantNumeric:"tabular-nums"}}>{count}</b>
       </div>
-      <div style={{display:"flex",gap:2,marginTop:9}}>
+      <div style={{display:"flex",gap:2,marginTop:10}}>
         {Array.from({length:steps}).map((_,i)=><s key={i} style={{flex:1,height:2,background:i<progress?color:"var(--line)",textDecoration:"none"}}/>)}
       </div>
     </div>

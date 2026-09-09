@@ -34,7 +34,8 @@ export default async function PipelinePage() {
   const applicationColumn: PipelineStageColumn = {
     stage: "application",
     label: "Application",
-    color: "var(--ash)",
+    // Readable as chip text on the dark header; --ash is too dark for that.
+    color: "var(--dim)",
     count: String(inbox.length).padStart(2, "0"),
     progress: 0,
     ventures: inbox.map((a) => {

@@ -18,6 +18,7 @@ import { TextField } from "../../design-system/components/forms/TextField.jsx";
 import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
 import { Modal } from "../../design-system/components/overlay/Modal.jsx";
 import { FilterBar } from "../../design-system/components/work/TaskRow.jsx";
+import { Archive, Download, FolderOpen, Upload } from "lucide-react";
 import {
   archiveDocAction,
   completeDocUploadAction,
@@ -237,7 +238,7 @@ export function DocsView({
         )}
         {empty ? (
           <div style={{ padding: "8px 16px 16px" }}>
-            <EmptyState hint="Drop a file above. Docs from an engaged application land here automatically.">
+            <EmptyState icon={FolderOpen} hint="Drop a file above. Docs from an engaged application land here automatically.">
               No docs in this venture yet
             </EmptyState>
           </div>
@@ -298,6 +299,7 @@ export function DocsView({
                 }}
               >
                 <ActionButton
+                  icon={Upload}
                   onClick={() => versionInputRef.current?.click()}
                 >
                   Upload new version
@@ -306,10 +308,10 @@ export function DocsView({
                   href={`/api/docs/${selected.id}/download?dl=1`}
                   style={{ textDecoration: "none" }}
                 >
-                  <ActionButton>Download</ActionButton>
+                  <ActionButton icon={Download}>Download</ActionButton>
                 </a>
                 {sharedOnly ? null : (
-                  <ActionButton onClick={onArchive}>Archive</ActionButton>
+                  <ActionButton icon={Archive} onClick={onArchive}>Archive</ActionButton>
                 )}
               </div>
             </div>
@@ -363,6 +365,7 @@ export function DocsView({
           footer={
             <>
               <ActionButton
+                icon={Upload}
                 onClick={() => {
                   if (pending) return;
                   runUpload(draft.file, {

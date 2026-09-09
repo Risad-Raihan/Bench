@@ -11,6 +11,7 @@ import {
 import { EmptyState, Panel } from "../../design-system/components/layout/Panel.jsx";
 import { ActionButton, DecisionRow } from "../../design-system/components/decisions/DecisionRow.jsx";
 import { ChecklistRow } from "../../design-system/components/data/FactRow.jsx";
+import { ListChecks, NotebookPen, Plus, Scale } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { AccessPanel, type AccessMember } from "@/components/AccessPanel";
 import { MoveStageModal } from "@/components/MoveStageModal";
@@ -340,7 +341,7 @@ export function VentureView({
         />
       ) : (
         <PageContainer>
-          <EmptyState hint={emptyCopy.hint}>{emptyCopy.label}</EmptyState>
+          <EmptyState icon={ListChecks} hint={emptyCopy.hint}>{emptyCopy.label}</EmptyState>
         </PageContainer>
       )}
       {moveError && !pendingMove ? (
@@ -510,6 +511,7 @@ function VentureNotesList({
     return (
       <PageContainer>
         <EmptyState
+          icon={NotebookPen}
           hint="Notes owned by this venture will appear here."
           action={canCreate ? "+ New note" : undefined}
           onAction={canCreate ? () => void onCreate() : undefined}
@@ -524,7 +526,7 @@ function VentureNotesList({
     <PageContainer>
       {canCreate ? (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 11 }}>
-          <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
+          <ActionButton icon={Plus} onClick={() => void onCreate()}>New note</ActionButton>
         </div>
       ) : null}
       {notes.length > 0 && mentioned.length > 0 && (
@@ -588,7 +590,7 @@ function VentureDecisionsList({
   if (decisions.length === 0) {
     return (
       <PageContainer>
-        <EmptyState hint="Decisions made for this venture will appear here.">
+        <EmptyState icon={Scale} hint="Decisions made for this venture will appear here.">
           No decisions yet
         </EmptyState>
       </PageContainer>

@@ -1,11 +1,12 @@
 import React from "react";
-export function ActionButton({children,onClick,accent=true}){
+import { Icon } from "../media/Icon.jsx";
+export function ActionButton({children,onClick,accent=true,icon}){
   const [h,setH]=React.useState(false);
   return (<div onClick={onClick} onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
     style={{fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",padding:"6px 11px",cursor:"pointer",borderRadius:2,
       border:"1px solid "+(accent?"var(--copper)":h?"var(--line2)":"var(--line)"),color:accent?"var(--copper)":h?"var(--dim)":"var(--faint)",
       background:accent&&h?"var(--copper-tint)":accent?"var(--copper-wash)":"transparent",transition:"var(--dur-fast)",
-      whiteSpace:"nowrap",flex:"none"}}>{children}</div>);
+      whiteSpace:"nowrap",flex:"none",display:"inline-flex",alignItems:"center",gap:6}}>{icon&&<Icon glyph={icon} size={12}/>}{children}</div>);
 }
 export function DecisionRow({decision,date,who,venture,ventureColor,source,rationale,expanded=false,onToggle,onOpenSource}){
   const [h,setH]=React.useState(false);

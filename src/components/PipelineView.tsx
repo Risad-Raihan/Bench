@@ -10,6 +10,7 @@ import {
   VentureCard,
 } from "../../design-system/components/pipeline/VentureCard.jsx";
 import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
+import { Check, Plus, X } from "lucide-react";
 import {
   engageApplicationAction,
   passApplicationAction,
@@ -134,7 +135,7 @@ export function PipelineView({
     <>
       <PageHeader
         title="Pipeline"
-        right={<ActionButton onClick={open}>+ New venture</ActionButton>}
+        right={<ActionButton icon={Plus} onClick={open}>New venture</ActionButton>}
       />
       <PipelineBoard columns={6}>
         {stages.map((col) => (
@@ -236,7 +237,7 @@ export function PipelineView({
                 ),
               )}
               {col.ventures.length === 0 && (
-                <AddButton>Nothing here yet</AddButton>
+                <AddButton icon={Plus}>Nothing here yet</AddButton>
               )}
             </StageColumn>
           </div>
@@ -338,8 +339,8 @@ function ApplicationCard({
           transition: "opacity var(--dur-fast)",
         }}
       >
-        <ActionButton onClick={() => run("engage")}>Engage</ActionButton>
-        <ActionButton accent={false} onClick={() => run("pass")}>
+        <ActionButton icon={Check} onClick={() => run("engage")}>Engage</ActionButton>
+        <ActionButton icon={X} accent={false} onClick={() => run("pass")}>
           Pass
         </ActionButton>
       </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
 import { TextField } from "../../design-system/components/forms/TextField.jsx";
 import { Modal } from "../../design-system/components/overlay/Modal.jsx";
+import { ArrowRight } from "lucide-react";
 
 export function MoveStageModal({
   name,
@@ -29,7 +30,7 @@ export function MoveStageModal({
       width={520}
       footer={
         <>
-          <ActionButton onClick={() => onConfirm(reason)}>
+          <ActionButton icon={ArrowRight} onClick={() => onConfirm(reason)}>
             {pending ? "Moving" : "Move"}
           </ActionButton>
           <span

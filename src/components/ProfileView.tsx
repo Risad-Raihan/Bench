@@ -11,6 +11,7 @@ import {
   AvatarPicker,
 } from "../../design-system/components/media/Avatar.jsx";
 import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
+import { Check } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { AVATAR_KEYS } from "@/lib/avatars";
 import { updateProfileAction } from "@/lib/profile/actions";
@@ -114,7 +115,7 @@ export function ProfileView({ profile }: { profile: Profile }) {
               marginTop: 4,
             }}
           >
-            <ActionButton onClick={save}>
+            <ActionButton icon={Check} onClick={save}>
               {pending ? "Saving…" : "Save changes"}
             </ActionButton>
             <span

@@ -6,6 +6,7 @@ import { ActionButton } from "../../design-system/components/decisions/DecisionR
 import { TextField } from "../../design-system/components/forms/TextField.jsx";
 import { Panel } from "../../design-system/components/layout/Panel.jsx";
 import { Modal } from "../../design-system/components/overlay/Modal.jsx";
+import { Send, UserPlus } from "lucide-react";
 import { formatDueDate } from "@/lib/format";
 import {
   disableMemberAction,
@@ -70,6 +71,7 @@ export function AccessPanel({
         }}
       >
         <ActionButton
+          icon={UserPlus}
           onClick={() => {
             setError(null);
             setInviteRole("founder");
@@ -78,6 +80,7 @@ export function AccessPanel({
           Invite founder
         </ActionButton>
         <ActionButton
+          icon={UserPlus}
           accent={false}
           onClick={() => {
             setError(null);
@@ -314,6 +317,7 @@ function InviteMemberModal({
       footer={
         <>
           <ActionButton
+            icon={Send}
             onClick={() => {
               if (pending) return;
               onSubmit(name, email);

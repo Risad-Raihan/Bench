@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
+import { CheckCheck } from "lucide-react";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import {
   markAllReadAction,
@@ -58,6 +59,7 @@ export function NotificationInbox({
         </span>
         {unread > 0 ? (
           <ActionButton
+            icon={CheckCheck}
             accent={false}
             onClick={() => {
               if (pending) return;

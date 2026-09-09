@@ -1,7 +1,8 @@
 import React from "react";
-export function SectionLabel({children,color,right}){
+import { Icon } from "../media/Icon.jsx";
+export function SectionLabel({children,color,right,icon}){
   return (<div style={{display:"flex",alignItems:"center",gap:10}}>
-    <i style={{fontStyle:"normal",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".18em",textTransform:"uppercase",color:color||"var(--faint)"}}>{children}</i>
+    <i style={{fontStyle:"normal",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".18em",textTransform:"uppercase",color:color||"var(--faint)",display:"inline-flex",alignItems:"center",gap:7}}>{icon&&<Icon glyph={icon} size={12} color={color||"var(--faint)"}/>}{children}</i>
     <s style={{flex:1,height:1,background:"var(--line)",textDecoration:"none"}}/>
     {right!=null&&<b style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--faint)",fontWeight:400}}>{right}</b>}
   </div>);
@@ -12,8 +13,9 @@ export function Panel({label,right,children,pad=13,flush=false}){
     {children}
   </div>);
 }
-export function EmptyState({children,hint,action,onAction}){
+export function EmptyState({children,hint,action,onAction,icon}){
   return (<div style={{border:"1px dashed var(--line)",borderRadius:2,padding:"26px 18px",textAlign:"center"}}>
+    {icon&&<div style={{display:"flex",justifyContent:"center",marginBottom:11}}><Icon glyph={icon} size={20} stroke={1.5} color="var(--ink-ghost3)"/></div>}
     <div style={{fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",color:"var(--ink-ghost3)"}}>{children}</div>
     {hint&&<div style={{fontSize:12,color:"var(--faint)",marginTop:9,lineHeight:1.5}}>{hint}</div>}
     {action&&<div onClick={onAction} style={{display:"inline-block",marginTop:14,fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",color:"var(--copper)",border:"1px solid var(--line)",padding:"6px 11px",cursor:"pointer"}}>{action}</div>}

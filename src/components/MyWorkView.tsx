@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "../../design-system/components/chrome/PageHeader.jsx";
 import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
+import { ClipboardCheck } from "lucide-react";
 import {
   FilterBar,
   GroupHeader,
@@ -86,6 +87,7 @@ export function MyWorkView({
       {shown === 0 && (
         <div style={{ padding: 22 }}>
           <EmptyState
+            icon={ClipboardCheck}
             hint={
               open
                 ? `Clear the filter to see the other ${open} open across every venture.`

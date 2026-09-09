@@ -2,6 +2,7 @@
 
 import { ActivityRow } from "../../design-system/components/data/FactRow.jsx";
 import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
+import { Waypoints } from "lucide-react";
 import type { ActivityRowView } from "@/lib/activity/view";
 
 export function ActivityFeed({
@@ -18,7 +19,11 @@ export function ActivityFeed({
   onSelect?: (item: ActivityRowView) => void;
 }) {
   if (items.length === 0) {
-    return <EmptyState hint={emptyHint}>{emptyLabel}</EmptyState>;
+    return (
+      <EmptyState icon={Waypoints} hint={emptyHint}>
+        {emptyLabel}
+      </EmptyState>
+    );
   }
 
   return (

@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
 import { EmptyState } from "../../design-system/components/layout/Panel.jsx";
+import { NotebookPen, Plus } from "lucide-react";
 import {
   MetaRail,
   NoteSidebar,
@@ -118,7 +119,7 @@ export function NotesView({
       >
         <div style={{ padding: "14px 15px 0" }}>
           {canCreate ? (
-            <ActionButton onClick={() => void onCreate()}>+ New note</ActionButton>
+            <ActionButton icon={Plus} onClick={() => void onCreate()}>New note</ActionButton>
           ) : null}
         </div>
         <NoteSidebar
@@ -145,6 +146,7 @@ export function NotesView({
           }}
         >
           <EmptyState
+            icon={NotebookPen}
             hint="Capture a meeting, a decision, or a loose thought."
             action="+ New note"
             onAction={() => void onCreate()}

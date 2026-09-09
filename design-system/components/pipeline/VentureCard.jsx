@@ -1,5 +1,6 @@
 import React from "react";
 import { Avatar } from "../media/Avatar.jsx";
+import { Icon } from "../media/Icon.jsx";
 export function GateBar({total=6,filled=0,color="var(--copper)",height=3,gap=2.5}){
   return (<div style={{display:"flex",gap,marginTop:11}}>
     {Array.from({length:total}).map((_,i)=><s key={i} style={{flex:1,height,background:i<filled?color:"var(--gate-empty)",textDecoration:"none"}}/>)}
@@ -29,10 +30,10 @@ export function VentureCard({name,caption,color="var(--copper)",gates=0,gateTota
       </div>
     </div>);
 }
-export function AddButton({children="+ Venture",onClick}){
+export function AddButton({children="+ Venture",onClick,icon}){
   const [h,setH]=React.useState(false);
   return (<button onClick={onClick} onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
-    style={{width:"100%",border:"1px dashed "+(h?"var(--line2)":"var(--line)"),background:"transparent",color:h?"var(--dim)":"var(--ink-ghost3)",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",padding:9,cursor:"pointer",transition:"var(--dur-fast)"}}>{children}</button>);
+    style={{width:"100%",border:"1px dashed "+(h?"var(--line2)":"var(--line)"),background:"transparent",color:h?"var(--dim)":"var(--ink-ghost3)",fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",padding:9,cursor:"pointer",transition:"var(--dur-fast)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7}}>{icon&&<Icon glyph={icon} size={12}/>}{children}</button>);
 }
 export function StageColumn({stage,count,progress=0,color="var(--copper)",steps=5,children}){
   return (<div style={{background:"var(--bg2)",minHeight:290}}>

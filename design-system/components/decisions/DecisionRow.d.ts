@@ -15,5 +15,5 @@ export function DecisionRow(props: DecisionRowProps): JSX.Element;
 export interface SourceChipProps { children: React.ReactNode; onClick?: (e?: any) => void }
 export function SourceChip(props: SourceChipProps): JSX.Element;
 /** Copper-outlined mono action. The only "button" in Bench besides AddButton. */
-export interface ActionButtonProps { children: React.ReactNode; onClick?: () => void; accent?: boolean }
+export interface ActionButtonProps { children: React.ReactNode; onClick?: () => void; accent?: boolean; icon?: import("../media/Icon").Glyph }
 export function ActionButton(props: ActionButtonProps): JSX.Element;

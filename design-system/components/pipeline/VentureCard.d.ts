@@ -23,7 +23,7 @@ export function GateBar(props: GateBarProps): JSX.Element;
 export interface WhoChipProps { initials: string; size?: number }
 export function WhoChip(props: WhoChipProps): JSX.Element;
 /** Dashed mono-uppercase affordance at the bottom of a stage column. */
-export interface AddButtonProps { children?: React.ReactNode; onClick?: () => void }
+export interface AddButtonProps { children?: React.ReactNode; onClick?: () => void; icon?: import("../media/Icon").Glyph }
 export function AddButton(props: AddButtonProps): JSX.Element;
 /** One of the five stage columns. Sits on --bg2 so every card is one surface step above its column — that step, not a background gradient, is how the board separates. */
 export interface StageColumnProps { stage: string; count: string; progress?: number; color?: string; steps?: number; children?: React.ReactNode }

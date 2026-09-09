@@ -11,6 +11,7 @@ import {
 import { Modal } from "../../design-system/components/overlay/Modal.jsx";
 import { AddButton } from "../../design-system/components/pipeline/VentureCard.jsx";
 import { FilterBar } from "../../design-system/components/work/TaskRow.jsx";
+import { Check, Plus } from "lucide-react";
 import { BOARD_COLUMNS, BOARD_LANES } from "@/lib/lanes";
 import type { Lane as LaneKey, TaskStatus } from "@/lib/lanes";
 import type { Priority } from "@/lib/data/tasks";
@@ -328,7 +329,7 @@ function BoardColumn({
             marginTop: 2,
           }}
         >
-          <AddButton onClick={onAdd}>+ Task</AddButton>
+          <AddButton icon={Plus} onClick={onAdd}>Task</AddButton>
         </div>
       </KanbanColumn>
     </div>
@@ -365,7 +366,7 @@ function TaskModal({
       width={520}
       footer={
         <>
-          <ActionButton onClick={onSave}>
+          <ActionButton icon={Check} onClick={onSave}>
             {pending ? "Saving" : creating ? "Create task" : "Save"}
           </ActionButton>
           <span

@@ -68,7 +68,7 @@ export function AvatarPicker({
   keys = [],
   value,
   onChange,
-  size = 34,
+  size = 46,
   label = "Avatar",
   note,
 }) {
@@ -126,7 +126,7 @@ export function AvatarPicker({
                 placeItems: "center",
               }}
             >
-              <Avatar avatar={key} size={size - 8} />
+              <Avatar avatar={key} size={size - 10} />
             </button>
           );
         })}

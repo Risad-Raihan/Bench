@@ -1,0 +1,10 @@
+Avatar artwork in this directory is the "Lorelei" style by Lisa Wischofsky,
+generated via DiceBear (https://dicebear.com) and released under
+Creative Commons Zero v1.0 Universal (CC0 1.0 — public domain).
+
+  https://www.figma.com/community/file/1198749693280469639
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+Each SVG was generated from a fixed seed and committed so the set is stable
+and served locally (no runtime dependency on the DiceBear API). av-default.svg
+is the fallback shown for founders who came in through the aponvlab.io pipeline.

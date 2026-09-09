@@ -46,18 +46,25 @@ const ROUTE_LABELS: Record<string, string> = Object.fromEntries(
   Object.entries(NAV_ROUTES).map(([label, route]) => [route, label]),
 );
 
+export type AppShellViewer = {
+  name: string;
+  avatar: string;
+};
+
 export function AppShell({
   children,
   partner = true,
   unreadCount,
   notifications,
   theme,
+  viewer,
 }: {
   children: React.ReactNode;
   partner?: boolean;
   unreadCount?: number;
   notifications: ActivityRowView[];
   theme: Theme;
+  viewer: AppShellViewer;
 }) {
   return (
     <NewVentureProvider>
@@ -66,6 +73,7 @@ export function AppShell({
         unreadCount={unreadCount}
         notifications={notifications}
         theme={theme}
+        viewer={viewer}
       >
         {children}
       </AppShellChrome>
@@ -79,12 +87,14 @@ function AppShellChrome({
   unreadCount,
   notifications,
   theme,
+  viewer,
 }: {
   children: React.ReactNode;
   partner: boolean;
   unreadCount?: number;
   notifications: ActivityRowView[];
   theme: Theme;
+  viewer: AppShellViewer;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -111,6 +121,8 @@ function AppShellChrome({
           if (!partner) return;
           router.push(NAV_ROUTES[item]);
         }}
+        avatar={viewer.avatar}
+        accountName={viewer.name}
         onNewVenture={partner ? open : undefined}
         onJump={() => {}}
         menuItems={["Profile", "Settings", themeItem, "Log out"]}
@@ -123,6 +135,7 @@ function AppShellChrome({
         onMenuSelect={(item) => {
           if (item === "Log out") void signOut({ redirectTo: "/signin" });
           else if (item === themeItem) toggleTheme();
+          else if (item === "Profile") router.push("/profile");
         }}
       />
       {children}

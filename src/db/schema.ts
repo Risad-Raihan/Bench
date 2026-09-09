@@ -185,6 +185,9 @@ export const ventures = pgTable(
     founderName: text("founder_name"),
     founderEmail: text("founder_email"),
     founderPhone: text("founder_phone"),
+    // Avatar key ("av-07"), see src/lib/avatars.ts. Chosen in the New Venture
+    // modal; null for a website submission (default is applied on render).
+    founderAvatar: text("founder_avatar"),
 
     // Repo, Figma, Play Store, Granola, drive folder. Free-form on purpose,
     // a links table is overkill for four people.
@@ -606,6 +609,9 @@ export const applications = pgTable(
     // Chosen in the New Venture modal; applied when the venture is created on
     // Engage. Null for website submissions (colour is auto-assigned then).
     color: text("color"),
+    // Avatar key ("av-07"), see src/lib/avatars.ts. Null for website
+    // submissions — promote.ts falls back to the default avatar.
+    founderAvatar: text("founder_avatar"),
     linkedin: text("linkedin"),
     location: text("location"),
     applicantRole: text("applicant_role"),

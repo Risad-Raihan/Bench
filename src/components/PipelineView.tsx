@@ -29,6 +29,8 @@ export interface PipelineVentureCard {
   gates: number;
   gateTotal: number;
   who: string;
+  ownerAvatar?: string | null;
+  founderAvatar?: string;
   founder: string;
   flag?: string;
   kind?: "venture" | "application";
@@ -220,6 +222,8 @@ export function PipelineView({
                       gates={v.gates}
                       gateTotal={v.gateTotal}
                       who={v.who}
+                      ownerAvatar={v.ownerAvatar}
+                      founderAvatar={v.founderAvatar}
                       founder={v.founder}
                       flag={v.flag}
                       rise={i}
@@ -316,6 +320,7 @@ function ApplicationCard({
         caption={card.caption}
         color={card.color}
         who={card.who}
+        founderAvatar={card.founderAvatar}
         founder={card.founder}
         flag={card.flag}
         rise={rise}

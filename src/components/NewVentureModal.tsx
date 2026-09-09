@@ -13,9 +13,11 @@ import { useRouter } from "next/navigation";
 import { ActionButton } from "../../design-system/components/decisions/DecisionRow.jsx";
 import { DropZone } from "../../design-system/components/docs/FileRow.jsx";
 import { SwatchPicker } from "../../design-system/components/forms/SwatchPicker.jsx";
+import { AvatarPicker } from "../../design-system/components/media/Avatar.jsx";
 import { TextField } from "../../design-system/components/forms/TextField.jsx";
 import { Modal } from "../../design-system/components/overlay/Modal.jsx";
 import { createVentureAction } from "@/lib/ventures/actions";
+import { AVATAR_KEYS, DEFAULT_AVATAR } from "@/lib/avatars";
 
 const NewVentureContext = createContext<{ open: () => void } | null>(null);
 
@@ -69,6 +71,7 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
   const [line, setLine] = useState("");
   const [founder, setFounder] = useState("");
   const [founderEmail, setFounderEmail] = useState("");
+  const [founderAvatar, setFounderAvatar] = useState(DEFAULT_AVATAR);
   const [color, setColor] = useState("var(--copper)");
   const [deck, setDeck] = useState<File | null>(null);
   const [drag, setDrag] = useState(false);
@@ -93,6 +96,7 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
     form.set("oneLiner", line);
     form.set("founderName", founder);
     form.set("founderEmail", founderEmail);
+    form.set("founderAvatar", founderAvatar);
     form.set("color", color);
     if (deck) form.set("deck", deck);
     startTransition(async () => {
@@ -152,6 +156,13 @@ function NewVentureModal({ onClose }: { onClose: () => void }) {
         onChange={setFounderEmail}
         placeholder="tunde@immiclaw.com"
         optional
+      />
+      <AvatarPicker
+        label="Founder avatar"
+        note="How they show on the board"
+        keys={AVATAR_KEYS}
+        value={founderAvatar}
+        onChange={setFounderAvatar}
       />
       <SwatchPicker
         value={color}

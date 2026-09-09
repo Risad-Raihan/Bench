@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/current-user";
 import { isInternalUser } from "@/lib/auth/resolve";
 import { createManualApplication } from "@/lib/data/applications";
+import { resolveAvatar } from "@/lib/avatars";
 
 const MAX_DECK_BYTES = 15 * 1024 * 1024;
 const ALLOWED_DECK_TYPES = new Set([
@@ -39,6 +40,9 @@ export async function createVentureAction(
   const founderName = String(formData.get("founderName") ?? "").trim() || null;
   const founderEmail = String(formData.get("founderEmail") ?? "").trim() || null;
   const color = String(formData.get("color") ?? "").trim() || null;
+  const founderAvatar = resolveAvatar(
+    String(formData.get("founderAvatar") ?? "") || null,
+  );
 
   const deck = formData.get("deck");
   const file =
@@ -80,6 +84,7 @@ export async function createVentureAction(
       problem: oneLiner,
       founderName,
       founderEmail,
+      founderAvatar,
       color,
       deck: deckInfo,
     });

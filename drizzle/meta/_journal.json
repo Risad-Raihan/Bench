@@ -57,6 +57,13 @@
       "when": 1788703163419,
       "tag": "0007_odd_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788959923932,
+      "tag": "0008_cynical_warpath",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { Avatar } from "../media/Avatar.jsx";
 export function GateBar({total=6,filled=0,color="var(--copper)",height=3,gap=2.5}){
   return (<div style={{display:"flex",gap,marginTop:11}}>
     {Array.from({length:total}).map((_,i)=><s key={i} style={{flex:1,height,background:i<filled?color:"var(--gate-empty)",textDecoration:"none"}}/>)}
@@ -7,7 +8,7 @@ export function GateBar({total=6,filled=0,color="var(--copper)",height=3,gap=2.5
 export function WhoChip({initials,size=19}){
   return (<div style={{width:size,height:size,border:"1px solid var(--line2)",borderRadius:2,display:"grid",placeItems:"center",fontSize:11,color:"var(--dim)",fontFamily:"var(--font-mono)",flex:"none"}}>{initials}</div>);
 }
-export function VentureCard({name,caption,color="var(--copper)",gates=0,gateTotal=6,who,founder,flag,onClick,rise,showGates=true,showMeta=true}){
+export function VentureCard({name,caption,color="var(--copper)",gates=0,gateTotal=6,who,ownerAvatar,founderAvatar,founder,flag,onClick,rise,showGates=true,showMeta=true}){
   const [h,setH]=React.useState(false);
   return (
     <div onClick={onClick} onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
@@ -18,10 +19,13 @@ export function VentureCard({name,caption,color="var(--copper)",gates=0,gateTota
       <p style={{fontSize:11.5,color:"var(--dim)",marginTop:3,lineHeight:1.4}}>{caption}</p>
       {showGates&&<GateBar total={gateTotal} filled={gates} color={color}/>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginTop:showGates?10:11}}>
-        <WhoChip initials={who}/>
+        {ownerAvatar?<Avatar avatar={ownerAvatar} name={who} size={19}/>:<WhoChip initials={who}/>}
         {showMeta&&(flag
           ? <span style={{fontFamily:"var(--font-mono)",fontSize:11,letterSpacing:".06em",color:"var(--amber)",fontVariantNumeric:"tabular-nums",whiteSpace:"nowrap"}}>{flag}</span>
-          : <span style={{fontSize:11.5,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{founder}</span>)}
+          : (founder||founderAvatar)&&<span style={{display:"flex",alignItems:"center",gap:6,minWidth:0}}>
+              <Avatar avatar={founderAvatar} name={founder} size={16} dim/>
+              <span style={{fontSize:11.5,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{founder}</span>
+            </span>)}
       </div>
     </div>);
 }

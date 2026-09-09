@@ -20,6 +20,7 @@ export type PartnerApplication = {
   companyName: string;
   founderName: string | null;
   founderEmail: string | null;
+  founderAvatar: string | null;
   problem: string | null;
   createdAt: Date;
   rawPayload: Record<string, unknown>;
@@ -30,6 +31,7 @@ export type ManualApplicationInput = {
   problem?: string | null;
   founderName?: string | null;
   founderEmail?: string | null;
+  founderAvatar?: string | null;
   color?: string | null;
   deck?: {
     storageKey: string;
@@ -62,6 +64,7 @@ export async function createManualApplication(
       problem: input.problem?.trim() || null,
       founderName: input.founderName?.trim() || null,
       founderEmail: input.founderEmail?.trim().toLowerCase() || null,
+      founderAvatar: input.founderAvatar ?? null,
       color: input.color ?? null,
       deckStorageKey: input.deck?.storageKey ?? null,
       deckName: input.deck?.name ?? null,
@@ -94,6 +97,7 @@ export async function listInboxApplications(
       companyName: applications.companyName,
       founderName: applications.founderName,
       founderEmail: applications.founderEmail,
+      founderAvatar: applications.founderAvatar,
       problem: applications.problem,
       createdAt: applications.createdAt,
       rawPayload: applications.rawPayload,
@@ -126,6 +130,7 @@ export async function getApplication(
       companyName: applications.companyName,
       founderName: applications.founderName,
       founderEmail: applications.founderEmail,
+      founderAvatar: applications.founderAvatar,
       problem: applications.problem,
       createdAt: applications.createdAt,
       rawPayload: applications.rawPayload,

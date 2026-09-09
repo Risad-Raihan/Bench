@@ -3,6 +3,7 @@ import { listInboxApplications } from "@/lib/data/applications";
 import { listGateItems, listVentures } from "@/lib/data/ventures";
 import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
+import { resolveAvatar } from "@/lib/avatars";
 import {
   PipelineView,
   type PipelineStageColumn,
@@ -49,6 +50,7 @@ export default async function PipelinePage() {
         gates: 0,
         gateTotal: 0,
         who: "—",
+        founderAvatar: resolveAvatar(a.founderAvatar),
         founder: a.founderName ?? "",
         flag: stale ? `STALE ${daysSince(a.createdAt, now)}D` : undefined,
         kind: "application" as const,
@@ -74,6 +76,8 @@ export default async function PipelinePage() {
           openGates: gates.total - gates.done,
           stage,
           who: v.ownerInitials ?? "—",
+          ownerAvatar: v.ownerAvatar,
+          founderAvatar: resolveAvatar(v.founderAvatar),
           founder: v.founderName ?? "",
           flag: stale ? `STALE ${daysSince(v.stageEnteredAt, now)}D` : undefined,
         };

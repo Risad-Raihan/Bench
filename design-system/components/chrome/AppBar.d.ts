@@ -8,7 +8,9 @@ export interface AppBarProps {
   active?: string;
   /** true inside a venture — no nav item is lit */
   dimmed?: boolean;
-  /** the product initial in the copper square — "B" for Bench */ mark?: string;
+  /** the product initial in the copper square — "B" for Bench, shown until an avatar is set */ mark?: string;
+  /** the signed-in person's avatar key ("av-07"); replaces the copper mark when set */ avatar?: string | null;
+  /** the signed-in person's name — the mark's tooltip */ accountName?: string;
   onNavigate?: (item: string) => void;
   /** shows the copper "+ New venture" primary action — pass it on every screen; venture creation is top level, not a column affordance */
   onNewVenture?: () => void;

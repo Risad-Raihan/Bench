@@ -45,14 +45,21 @@ export type PartnerVenture = {
   ownerId: string | null;
   ownerName: string | null;
   ownerInitials: string | null;
+  ownerAvatar: string | null;
   founderName: string | null;
+  founderAvatar: string | null;
   stageEnteredAt: Date;
   boardPosition: number;
 };
 
 export type FounderVenture = Omit<
   PartnerVenture,
-  "equityPct" | "potential" | "ownerId" | "ownerName" | "ownerInitials"
+  | "equityPct"
+  | "potential"
+  | "ownerId"
+  | "ownerName"
+  | "ownerInitials"
+  | "ownerAvatar"
 >;
 
 export type SwitchTarget = {
@@ -114,7 +121,9 @@ const partnerVentureColumns = {
   ownerId: ventures.ownerId,
   ownerName: users.name,
   ownerInitials: users.initials,
+  ownerAvatar: users.avatarUrl,
   founderName: ventures.founderName,
+  founderAvatar: ventures.founderAvatar,
   stageEnteredAt: ventures.stageEnteredAt,
   boardPosition: ventures.boardPosition,
 };
@@ -128,6 +137,7 @@ const founderVentureColumns = {
   stage: ventures.stage,
   status: ventures.status,
   founderName: ventures.founderName,
+  founderAvatar: ventures.founderAvatar,
   stageEnteredAt: ventures.stageEnteredAt,
   boardPosition: ventures.boardPosition,
 };
@@ -347,6 +357,7 @@ export type InsertVentureValues = {
   color: string;
   founderName: string | null;
   founderEmail: string | null;
+  founderAvatar: string | null;
   potential: Potential | null;
   ownerId: string | null;
   createdBy: string | null;

@@ -11,6 +11,7 @@ import {
   listUsedVentureColors,
   type Executor,
 } from "@/lib/data/ventures";
+import { resolveAvatar } from "@/lib/avatars";
 import { seedGatesForStage } from "@/lib/stages/move";
 import {
   nextAvailableVentureColor,
@@ -30,6 +31,7 @@ export type CreateVentureInput = {
   market?: string | null;
   founderName?: string | null;
   founderEmail?: string | null;
+  founderAvatar?: string | null;
   potential?: Potential | null;
   ownerId?: string | null;
   color?: string | null;
@@ -109,6 +111,7 @@ export async function createVenture(
       color,
       founderName: truncate(input.founderName, 200),
       founderEmail: truncate(input.founderEmail, 200),
+      founderAvatar: resolveAvatar(input.founderAvatar),
       potential: input.potential ?? null,
       ownerId: input.ownerId ?? null,
       createdBy: actorId,

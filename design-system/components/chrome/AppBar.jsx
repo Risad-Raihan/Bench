@@ -1,5 +1,6 @@
 import React from "react";
-export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decisions"],active="Pipeline",dimmed=false,mark="B",onNavigate,onNewVenture,onJump,newLabel="+ New venture",jumpLabel="Jump to",jumpKey="⌘K",menuItems=["Profile","Settings","Log out"],onMenuSelect,unreadCount,unreadMenu}){
+import { Avatar } from "../media/Avatar.jsx";
+export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decisions"],active="Pipeline",dimmed=false,mark="B",avatar,accountName,onNavigate,onNewVenture,onJump,newLabel="+ New venture",jumpLabel="Jump to",jumpKey="⌘K",menuItems=["Profile","Settings","Log out"],onMenuSelect,unreadCount,unreadMenu}){
   const [nh,setNh]=React.useState(false);
   const [open,setOpen]=React.useState(false);
   const [inbox,setInbox]=React.useState(false);
@@ -19,8 +20,12 @@ export function AppBar({items=["Pipeline","My work","Notes","Calendar","Decision
   return (
     <div style={{display:"flex",alignItems:"center",gap:14,padding:"11px 16px",borderBottom:"1px solid var(--line)",background:"var(--bg2)"}}>
       <div ref={wrap} style={{position:"relative",flex:"none"}}>
-        <div onClick={()=>setOpen(o=>!o)} title="Account"
-          style={{width:19,height:19,background:"var(--copper)",borderRadius:2,display:"grid",placeItems:"center",fontSize:11,fontWeight:700,color:"var(--on-copper)",fontFamily:"var(--font-mono)",cursor:"pointer",boxShadow:open?"0 0 0 3px var(--copper-wash)":"none",transition:"box-shadow var(--dur-fast)"}}>{mark}</div>
+        <div onClick={()=>setOpen(o=>!o)} title={accountName||"Account"}
+          style={{borderRadius:2,cursor:"pointer",display:"grid",placeItems:"center",boxShadow:open?"0 0 0 3px var(--copper-wash)":"none",transition:"box-shadow var(--dur-fast)"}}>
+          {avatar
+            ?<Avatar avatar={avatar} name={accountName} size={20}/>
+            :<span style={{width:19,height:19,background:"var(--copper)",borderRadius:2,display:"grid",placeItems:"center",fontSize:11,fontWeight:700,color:"var(--on-copper)",fontFamily:"var(--font-mono)"}}>{mark}</span>}
+        </div>
         {open&&<div style={{position:"absolute",top:"calc(100% + 10px)",left:0,minWidth:158,background:"var(--bg2)",border:"1px solid var(--line)",borderRadius:3,boxShadow:"var(--shadow-menu)",padding:"4px 0",zIndex:60}}>
           {menuItems.map((mi,i)=><div key={mi}
             onMouseEnter={()=>setHov(mi)} onMouseLeave={()=>setHov(null)}

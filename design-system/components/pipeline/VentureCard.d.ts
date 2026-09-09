@@ -8,6 +8,8 @@ export interface VentureCardProps {
   /** venture identity colour, e.g. var(--magenta) */ color?: string;
   gates?: number; gateTotal?: number;
   /** AVL owner initials, e.g. "RN" */ who: string;
+  /** AVL owner's avatar key ("av-07"); renders in place of the initials chip when set */ ownerAvatar?: string | null;
+  /** the founder's avatar key ("av-07"), shown next to their name */ founderAvatar?: string | null;
   /** the founder's name, captured at onboarding — sits opposite the owner chip */ founder?: string;
   /** an amber warning that REPLACES the founder line, e.g. "STALE 14D". Amber always means look here, so it outranks the name. */ flag?: string;
   onClick?: () => void;

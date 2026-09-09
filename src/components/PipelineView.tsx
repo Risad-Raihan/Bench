@@ -164,6 +164,10 @@ export function PipelineView({
               if (card) requestMove(card, col.stage);
             }}
             style={{
+              // Paint the column so a stretched empty grid cell reads as the
+              // column surface, not the board's hairline-coloured backdrop
+              // showing through (the "shadow" that grew with the tallest column).
+              background: "var(--bg2)",
               outline:
                 overStage === col.stage
                   ? "1px solid var(--line2)"

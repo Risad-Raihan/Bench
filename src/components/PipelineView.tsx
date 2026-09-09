@@ -2,10 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  PageHeader,
-  StatStrip,
-} from "../../design-system/components/chrome/PageHeader.jsx";
+import { PageHeader } from "../../design-system/components/chrome/PageHeader.jsx";
 import {
   AddButton,
   PipelineBoard,
@@ -48,19 +45,12 @@ export interface PipelineStageColumn {
   ventures: PipelineVentureCard[];
 }
 
-export interface PipelineStat {
-  value: string | number;
-  label: string;
-}
-
 const DRAG_TYPE = "text/plain";
 
 export function PipelineView({
   stages,
-  stats,
 }: {
   stages: PipelineStageColumn[];
-  stats: PipelineStat[];
 }) {
   const router = useRouter();
   const { open } = useNewVenture();
@@ -248,7 +238,6 @@ export function PipelineView({
           </div>
         ))}
       </PipelineBoard>
-      <StatStrip stats={stats} />
       {error && !pending ? (
         <div
           style={{

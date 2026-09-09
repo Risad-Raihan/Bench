@@ -1,12 +1,11 @@
 import { requirePartner } from "@/lib/auth/current-user";
 import { listInboxApplications } from "@/lib/data/applications";
-import { listGateItems, listPipelineTasks, listVentures } from "@/lib/data/ventures";
+import { listGateItems, listVentures } from "@/lib/data/ventures";
 import { daysSince, isStale, STAGES } from "@/lib/pipeline-stages";
 import { ventureColor } from "@/lib/venture-colors";
 import {
   PipelineView,
   type PipelineStageColumn,
-  type PipelineStat,
 } from "@/components/PipelineView";
 
 export default async function PipelinePage() {
@@ -19,10 +18,7 @@ export default async function PipelinePage() {
   ]);
   const ventureIds = ventureRows.map((v) => v.id);
 
-  const [gateRows, taskRows] = await Promise.all([
-    listGateItems(user, ventureIds),
-    listPipelineTasks(user, ventureIds),
-  ]);
+  const gateRows = await listGateItems(user, ventureIds);
 
   const gatesByVenture = new Map<string, { total: number; done: number }>();
   for (const g of gateRows) {
@@ -33,13 +29,6 @@ export default async function PipelinePage() {
     if (g.doneAt) acc.done += 1;
     gatesByVenture.set(g.ventureId, acc);
   }
-
-  const staleVentures = ventureRows.filter((v) => isStale(v.stageEnteredAt, now));
-  const openTasks = taskRows.filter((t) => t.status !== "done");
-  const weekFromNow = new Date(now.getTime() + 7 * 86_400_000);
-  const dueThisWeek = openTasks.filter(
-    (t) => t.dueDate && new Date(t.dueDate) <= weekFromNow && new Date(t.dueDate) >= now,
-  );
 
   const applicationColumn: PipelineStageColumn = {
     stage: "application",
@@ -101,12 +90,5 @@ export default async function PipelinePage() {
 
   const stages: PipelineStageColumn[] = [applicationColumn, ...stageColumns];
 
-  const stats: PipelineStat[] = [
-    { value: ventureRows.length, label: "active ventures" },
-    { value: openTasks.length, label: "open tasks" },
-    { value: dueThisWeek.length, label: "due this week" },
-    { value: staleVentures.length, label: "stalled" },
-  ];
-
-  return <PipelineView stages={stages} stats={stats} />;
+  return <PipelineView stages={stages} />;
 }
